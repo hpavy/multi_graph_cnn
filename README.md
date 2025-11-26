@@ -1,7 +1,7 @@
 # [Geometric Matrix Completion with Recurrent Multi-Graph Neural Networks] Implementation in PyTorch and additional features
 
 
-**Authors**: [Valentin Exbrayat](https://github.com/yourusername), [Tom Mariani](https://github.com/t-mariani), [Hugo Pavy](https://github.com/hpavy)
+**Authors**: [Valentin Exbrayat](https://github.com/valdo92), [Tom Mariani](https://github.com/t-mariani), [Hugo Pavy](https://github.com/hpavy)
 
 ---
 
