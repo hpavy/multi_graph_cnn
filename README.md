@@ -29,6 +29,7 @@ We aim to provide a clean, modular, and well-documented implementation of the or
   - [Overview](#overview)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
+  - [TODO](#todo)
   - [Roadmap](#roadmap)
   - [Installation](#installation)
     - [Setup](#setup)
@@ -41,6 +42,17 @@ We aim to provide a clean, modular, and well-documented implementation of the or
 - Additional features (see [Roadmap](#roadmap))
 
 ---
+
+## TODO
+
+- [ ] Importing the data
+- [ ] Splitting the data train, test, val
+- [ ] Creating the dataset for pytorch
+- [ ] Coding the model
+- [ ] Coding the test loop
+- [ ] Filling the code of the train loop
+- [ ] Creating visualization
+- [ ] Saving the model (saving the best model ?)
 
 ## Roadmap
 
