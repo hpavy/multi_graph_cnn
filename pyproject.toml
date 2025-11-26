@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "mutli-graph-cnn"
+version = "0.1.0"
+description = ""
+authors = ["Hugo Pavy <hugo.pavy@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "multi_graph_cnn", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
