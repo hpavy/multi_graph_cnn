@@ -44,7 +44,6 @@ def extract_nested_dict(d: dict, type_element=None):
     # Then we can iterate on keys of d
     res = {}
     for key in d.keys():
-        print(key)
         res[key] = extract_nested_dict(d[key], type_element)
 
     return res
