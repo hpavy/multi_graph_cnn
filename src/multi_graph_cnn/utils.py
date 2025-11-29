@@ -1,6 +1,8 @@
 """Utils functions for the project"""
+
 from box import Box
 from typing import Literal
+import numpy as np
 import yaml
 import logging
 
@@ -29,3 +31,19 @@ def get_logger(name: str = "main", level: int = None) -> logging.Logger:
         logger.addHandler(ch)
 
     return logger
+
+
+def extract_nested_dict(d: dict, type_element=None):
+    # Basically check if d is a dict
+    # Needed for HDF5-format
+    if not hasattr(d, "keys"):
+        if type_element is None:
+            return d
+        return type_element(d)  # cast to type_element if provided
+
+    # Then we can iterate on keys of d
+    res = {}
+    for key in d.keys():
+        res[key] = extract_nested_dict(d[key], type_element)
+
+    return res
