@@ -6,6 +6,8 @@ import numpy as np
 import yaml
 import logging
 
+import torch
+
 
 def load_config(config_path="config.yaml", return_type: Literal["dict", "box"] = "box"):
     with open(config_path, "r") as file:
@@ -51,3 +53,7 @@ def extract_nested_dict(d: dict, type_element=None):
 def compute_loss(config):
     """Give the function in order to compute the loss"""
     pass # TODO
+
+def sparse_mx_to_torch(sparse_mx):
+    return torch.tensor(sparse_mx.toarray(), dtype=torch.float32)
+

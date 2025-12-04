@@ -28,20 +28,20 @@ if __name__ == "__main__":
     config.output_dir = str(dir_path)
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = MGCNN(config)
-    dataset_train = GraphDataset(data_train, config)
-    dataset_test = GraphDataset(data_test, config)
+    model = MGCNN(L_row, L_col, config)
+    # dataset_train = GraphDataset(data_train, config)
+    # dataset_test = GraphDataset(data_test, config)
 
     summary(
         model,
         depth=5,
-        # input_size=(1, 1, N, config.timepoints_input), # TODO
+        input_size=(data['M'].shape[0], data['M'].shape[1]),
         )
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config.learning_rate,
-        weight_decay=config.weight_decay,
+        # weight_decay=config.weight_decay,
         )
     
     loss = compute_loss(config)
