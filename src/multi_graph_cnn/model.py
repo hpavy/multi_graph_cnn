@@ -99,7 +99,6 @@ class BilinearChebConv(nn.Module):
         self.theta = nn.Parameter(torch.Tensor(
             self.p_row + 1,
             self.p_col + 1,
-            1,
             self.out_channels
         ))
 
@@ -140,7 +139,7 @@ class BilinearChebConv(nn.Module):
     def forward(self, x):
         """
         Args:
-            x: Input matrix ( In_Channels, M, N)
+            x: Input matrix (  M, N)
             L_row: Scaled Row Laplacian (M, M)
             L_col: Scaled Col Laplacian (N, N)
 
@@ -162,14 +161,14 @@ class BilinearChebConv(nn.Module):
 
         # Step A: Transform Rows (Tr * X)
         # (p_row, m, m) @ (c, m, n) -> (p_row, c, m, n)
-        x_row_transformed = torch.einsum('imp, cpn -> icmn', self.Tr, x)
+        x_row_transformed = torch.einsum('imp, pn -> imn', self.Tr, x)
         # Step B: Transform Columns ((Tr * X) * Tc)
         # Note: We multiply by Tc^T implicitly because X is (M, N) and Tc is (N, N)
         # (p_row, c, m, n) @ (p_col, n, n) -> (p_row, p_col, c, m, n)
-        basis_features = torch.einsum('icmn, jnk -> ijc mk', x_row_transformed, self.Tc)
+        basis_features = torch.einsum('imn, jnk -> ij mk', x_row_transformed, self.Tc)
         # Step C: Linearly combine using Theta
         # (p_row, p_col, c, m, n) * (p_row, p_col, c, o) -> (o, m, n)
-        out = torch.einsum('ij c m n, ij c o -> o m n', basis_features, self.theta)
+        out = torch.einsum('ij  m n, ij  o -> o m n', basis_features, self.theta)
         # 3. Add Bias
         out = out + self.bias.view(-1, 1, 1)
         return out
