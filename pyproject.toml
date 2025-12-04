@@ -17,6 +17,7 @@ scipy = "^1.16.3"
 python-box = "^7.3.2"
 pyaml = "^25.7.0"
 matplotlib = "^3.10.7"
+torchinfo = "^1.8.0"
 
 
 [build-system]

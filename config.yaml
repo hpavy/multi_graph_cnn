@@ -1,7 +1,16 @@
 # The config file
 
+# Dataset
+dataset_name: synthetic_netflix
+
 # Hyperparameters
 learning_rate : 0.001
 weight_decay : 0.0001
 batch_size : 1
 n_epoch : 10
+rate_training_validation : 0.5
+
+
+# Logging 
+log_each : 1
+log_level : INFO # DEBUG, INFO, WARNING, ERROR

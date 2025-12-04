@@ -19,7 +19,7 @@ if __name__ == "__main__":
     log.debug(config)
 
     data = read_data(config.dataset_name)
-    data_train, data_test, data_val = split_data(data, config)
+    O_training, O_val, O_test = split_data(data, config)
 
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
     dir_path = Path("saved_models/" + now)

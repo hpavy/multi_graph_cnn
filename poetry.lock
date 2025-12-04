@@ -2100,6 +2100,18 @@ optree = ["optree (>=0.13.0)"]
 pyyaml = ["pyyaml"]
 
 [[package]]
+name = "torchinfo"
+version = "1.8.0"
+description = "Model summary in PyTorch, based off of the original torchsummary."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "torchinfo-1.8.0-py3-none-any.whl", hash = "sha256:2e911c2918603f945c26ff21a3a838d12709223dc4ccf243407bce8b6e897b46"},
+    {file = "torchinfo-1.8.0.tar.gz", hash = "sha256:72e94b0e9a3e64dc583a8e5b7940b8938a1ac0f033f795457f27e6f4e7afa2e9"},
+]
+
+[[package]]
 name = "tornado"
 version = "6.5.2"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
@@ -2194,4 +2206,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.15"
-content-hash = "a8fda39127393f07fe79c2d36ef4878c586cd20b3e1f8d078bc17314ab5774b5"
+content-hash = "d27c76231df38a40ba902652ce13d5db2d65e264b381357df1d1d0e3cfe5a735"

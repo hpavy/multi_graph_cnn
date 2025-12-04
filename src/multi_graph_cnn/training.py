@@ -3,7 +3,7 @@
 from torch.utils.data import DataLoader
 
 from multi_graph_cnn.test import find_loss_test
-from multi_time_gnn.utils import get_logger
+from multi_graph_cnn.utils import get_logger
 
 log = get_logger()
 
