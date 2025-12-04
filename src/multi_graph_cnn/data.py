@@ -99,6 +99,6 @@ def split_data(data, config):
 def compute_the_laplacians(data):
     """Compute the laplacians"""
     W_row, W_col = data["W_row"], data["W_col"]
-    L_row = sp.csgraph.laplacian(W_row, normed=True)
+    L_row = sp.csgraph.laplacian(W_row, normed=True) #it is laplacian normalization not the one to be sure it is between -1 et 1
     L_col = sp.csgraph.laplacian(W_col, normed=True)
     return L_row, L_col
