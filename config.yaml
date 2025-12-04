@@ -9,6 +9,7 @@ weight_decay : 0.0001
 batch_size : 1
 n_epoch : 10
 rate_training_validation : 0.5
+nb_iterations_rnn : 10
 
 
 # Logging 

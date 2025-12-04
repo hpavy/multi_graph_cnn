@@ -8,7 +8,7 @@ from multi_graph_cnn.utils import get_logger
 log = get_logger()
 
 
-def train_loop(model, dataset_train, dataset_test, optimizer, config):
+def train_loop(model, dataset_train, dataset_test, optimizer, loss, config):
     train_loader = DataLoader(dataset_train, batch_size=config.batch_size, shuffle=True)
     test_loader = DataLoader(dataset_test, batch_size=config.batch_size, shuffle=False)
 

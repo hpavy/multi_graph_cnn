@@ -45,8 +45,8 @@ We aim to provide a clean, modular, and well-documented implementation of the or
 
 ## TODO
 
-- [ ] Importing the data
-- [ ] Splitting the data train, test, val
+- [X] Importing the data
+- [X] Splitting the data train, test, val
 - [ ] Creating the dataset for pytorch
 - [ ] Coding the model
 - [ ] Coding the test loop
