@@ -47,3 +47,7 @@ def extract_nested_dict(d: dict, type_element=None):
         res[key] = extract_nested_dict(d[key], type_element)
 
     return res
+
+def compute_loss(config):
+    """Give the function in order to compute the loss"""
+    pass # TODO

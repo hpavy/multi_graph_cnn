@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 from torchinfo import summary
 
-from multi_graph_cnn.utils import get_logger, load_config
+from multi_graph_cnn.utils import get_logger, load_config, compute_loss
 from multi_graph_cnn.data import read_data, split_data, compute_the_laplacians
 from multi_graph_cnn.model import MGCNN
 from multi_graph_cnn.dataset import GraphDataset
@@ -43,10 +43,12 @@ if __name__ == "__main__":
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
         )
+    
+    loss = compute_loss(config)
 
     log.info("Starting training...")
     try:
-        train_loop(model, dataset_train, dataset_test, optimizer, config)
+        train_loop(model, dataset_train, dataset_test, optimizer, loss, config)
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
