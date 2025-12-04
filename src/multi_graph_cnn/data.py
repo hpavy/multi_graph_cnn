@@ -94,3 +94,11 @@ def split_data(data, config):
     log.info(f"The number of element in O_test is: {int(np.sum(O_test).item())}")
     
     return O_train, O_val, O_test
+
+
+def compute_the_laplacians(data):
+    """Compute the laplacians"""
+    W_row, W_col = data["W_row"], data["W_col"]
+    L_row = sp.csgraph.laplacian(W_row, normed=True)
+    L_col = sp.csgraph.laplacian(W_col, normed=True)
+    return L_row, L_col
