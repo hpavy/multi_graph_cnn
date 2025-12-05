@@ -9,7 +9,6 @@ from torchinfo import summary
 from multi_graph_cnn.utils import get_logger, load_config, compute_loss
 from multi_graph_cnn.data import read_data, split_data, compute_the_laplacians
 from multi_graph_cnn.model import MGCNN
-from multi_graph_cnn.dataset import GraphDataset
 from multi_graph_cnn.training import train_loop
 
 
@@ -29,8 +28,6 @@ if __name__ == "__main__":
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = MGCNN(L_row, L_col, config)
-    # dataset_train = GraphDataset(data_train, config)
-    # dataset_test = GraphDataset(data_test, config)
     model = model.to(config.device)
     summary(
         model,
@@ -40,15 +37,22 @@ if __name__ == "__main__":
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=config.learning_rate,
+        lr=float(config.learning_rate),
         # weight_decay=config.weight_decay,
         )
-    
-    loss = compute_loss(config)
+    ###    Delete those two lines
+    loss = lambda x: x.mean() # compute_loss(config)
+    loss_rmse = lambda x: x.mean() 
+    ###
+
+    data = torch.tensor(data["M"]).to(config.device)
+    O_training = torch.tensor(O_training).to(config.device)
+    O_test = torch.tensor(O_test).to(config.device)
+    O_val = torch.tensor(O_val).to(config.device)
 
     log.info("Starting training...")
     try:
-        train_loop(model, dataset_train, dataset_test, optimizer, loss, config)
+        train_loop(model, data, O_training, O_val, O_test, optimizer, loss, loss_rmse, config)
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
