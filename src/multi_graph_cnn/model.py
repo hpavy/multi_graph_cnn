@@ -174,6 +174,7 @@ class BilinearChebConv(nn.Module):
         out = torch.einsum('ij  m n, ij  o -> o m n', basis_features, self.theta)
         # 3. Add Bias
         out = out + self.bias.view(-1, 1, 1)
+        out = F.relu(out)
         return out
 
 
