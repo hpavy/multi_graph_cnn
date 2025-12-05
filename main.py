@@ -34,10 +34,10 @@ if __name__ == "__main__":
     L_row = sparse_mx_to_torch(L_row).to(config.device)
     L_col = sparse_mx_to_torch(L_col).to(config.device)
 
-    L_row = L_row - torch.eye(L_row.shape[0], device=config.device)
-    L_col = L_col - torch.eye(L_col.shape[0], device=config.device)
+    L_row_rescaled = L_row - torch.eye(L_row.shape[0], device=config.device)
+    L_col_rescaled = L_col - torch.eye(L_col.shape[0], device=config.device)
 
-    model = MGCNN(L_row, L_col, config)
+    model = MGCNN(L_row_rescaled, L_col_rescaled, config)
     model = model.to(config.device)
     summary(
         model,
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         # weight_decay=config.weight_decay,
         )
 
-    loss = DirichletReguLoss(L_row, L_col,config)
+    loss = DirichletReguLoss(L_row, L_col, config)
     loss_rmse = rmse
 
     data = torch.tensor(data["M"]).to(config.device)
@@ -65,9 +65,20 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
-    loss_test, loss_test_rmse = compute_val_loss(
-        model, data, O_training, O_test, loss, loss_rmse, config
+    _, loss_test_rmse = compute_val_loss(
+        model, data, O_training + O_val + O_test,
+        torch.ones_like(O_training), loss, loss_rmse, config
         )
-    log.info(f"Test data: test: {loss_test:.2e} - test predict: {loss_test_rmse:.2e}")
+    _, loss_test_just_train = compute_val_loss(
+        model, data, O_training,
+        torch.ones_like(O_training), loss, loss_rmse, config
+        )
+    _, loss_test_just_train_val = compute_val_loss(
+        model, data, O_training + O_val,
+        torch.ones_like(O_training), loss, loss_rmse, config
+        )
+    log.info(f"Test data: predict on train: {loss_test_just_train:.2e}")
+    log.info(f"Test data: predict on train and val: {loss_test_just_train_val:.2e}")
+    log.info(f"Test data: predict on train and val and test: {loss_test_rmse:.2e}")
 
     log.info("✅ Pipeline completed successfully")

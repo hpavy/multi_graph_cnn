@@ -24,7 +24,7 @@ class DirichletReguLoss(nn.Module):
         self.L_col = L_col
         self.gamma = float(config.gamma)
 
-    def forward(self, X, Y):
+    def forward(self, X, Y, split_components=True):
         """
         X : matrix learnt
         Y : known entries, values of zero are considered to be unknown
@@ -33,11 +33,14 @@ class DirichletReguLoss(nn.Module):
         dirichlet_row = torch.trace(X.T @ self.L_row @ X)
         dirichlet_col = torch.trace(X @ self.L_col @ X.T)
 
-        X=normalize_x(X)
+        X = normalize_x(X)
         mask = Y > 0
-        regularization_term = torch.norm(mask * (X - Y))
-
-        return self.gamma/2*(dirichlet_row + dirichlet_col) + regularization_term
+        regularization_term = torch.norm(mask * (X - Y)) ** 2
+        regularization_term / torch.sum(mask)
+        if split_components:
+            return dirichlet_row, dirichlet_col, regularization_term
+        else:
+            return self.gamma/2*(dirichlet_row + dirichlet_col) + regularization_term
 
 
 def rmse(learnt, target):
