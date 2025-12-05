@@ -60,20 +60,20 @@ class RNN(nn.Module):
         self.c = None
 
     def forward(self, x_conv):
-        x_conv = x_conv.permute(2, 0, 1)
+        x_conv = x_conv.permute(1, 2, 0)
         if self.h is None:
-            self.h =  nn.zeros([x_conv.shape[0]*x_conv.shape[1], self.n_conv_feat])
-            self.c = nn.zeros([x_conv.shape[0]*x_conv.shape[1], self.n_conv_feat])
+            self.h =  torch.zeros([x_conv.shape[0]*x_conv.shape[1], self.n_conv_feat])
+            self.c = torch.zeros([x_conv.shape[0]*x_conv.shape[1], self.n_conv_feat])
 
-        f = F.sigmoid(nn.matmul(x_conv, self.W_f) + nn.matmul(self.h, self.U_f) + self.b_f)
-        i = F.sigmoid(nn.matmul(x_conv, self.W_i) + nn.matmul(self.h, self.U_i) + self.b_i)
-        o = F.sigmoid(nn.matmul(x_conv, self.W_o) + nn.matmul(self.h, self.U_o) + self.b_o)
+        f = F.sigmoid(torch.matmul(x_conv, self.W_f) + torch.matmul(self.h, self.U_f) + self.b_f)
+        i = F.sigmoid(torch.matmul(x_conv, self.W_i) + torch.matmul(self.h, self.U_i) + self.b_i)
+        o = F.sigmoid(torch.matmul(x_conv, self.W_o) + torch.matmul(self.h, self.U_o) + self.b_o)
 
-        update_c = F.sigmoid(nn.matmul(x_conv, self.W_c) + nn.matmul(self.h, self.U_c) + self.b_c)
+        update_c = F.sigmoid(torch.matmul(x_conv, self.W_c) + torch.matmul(self.h, self.U_c) + self.b_c)
         self.c = f @ self.c + i @ update_c
         self.h = o @ F.sigmoid(self.c)
 
-        delta_x = nn.tanh(nn.matmul(self.c, self.W_out) + self.b_out)
+        delta_x = nn.tanh(torch.matmul(self.c, self.W_out) + self.b_out)
         return delta_x
 
 
@@ -89,7 +89,6 @@ class BilinearChebConv(nn.Module):
             p_order_col (int): Chebyshev order for columns (items).
         """
         super().__init__()
-        self.in_channels = 1
         self.out_channels = config.out_channels
         self.p_row = config.p_order_row
         self.p_col = config.p_order_col
