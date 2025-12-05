@@ -10,6 +10,7 @@ from multi_graph_cnn.utils import sparse_mx_to_torch
 class RNN(nn.Module):
     def __init__(self, config):
         super().__init__()
+        self.device = config.device
         self.n_conv_feat = config.out_channels
 
         # Forget gate
@@ -33,8 +34,8 @@ class RNN(nn.Module):
         self.b_c = nn.Parameter(torch.Tensor(self.n_conv_feat))
 
         # Output parameters
-        self.W_out = nn.Parameter(torch.Tensor(self.n_conv_feat, 1)) 
-        self.b_out = nn.Parameter(torch.Tensor(1, 1)) 
+        self.W_out = nn.Parameter(torch.Tensor(self.n_conv_feat, 1))
+        self.b_out = nn.Parameter(torch.Tensor(1, 1))
 
         # The hidden states
         self.h = None
@@ -60,20 +61,24 @@ class RNN(nn.Module):
         self.c = None
 
     def forward(self, x_conv):
-        x_conv = x_conv.permute(1, 2, 0)
+        """qxmxn -> mxn"""
+        q, m, n = x_conv.shape
+        x_conv = x_conv.permute(1, 2, 0)  # mxnxq
+        x_conv = x_conv.reshape(-1, x_conv.shape[-1])
         if self.h is None:
-            self.h =  torch.zeros([x_conv.shape[0]*x_conv.shape[1], self.n_conv_feat])
-            self.c = torch.zeros([x_conv.shape[0]*x_conv.shape[1], self.n_conv_feat])
+            self.h = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(self.device)  # m.nxq
+            self.c = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(self.device)  # m.nxq
 
-        f = F.sigmoid(torch.matmul(x_conv, self.W_f) + torch.matmul(self.h, self.U_f) + self.b_f)
-        i = F.sigmoid(torch.matmul(x_conv, self.W_i) + torch.matmul(self.h, self.U_i) + self.b_i)
-        o = F.sigmoid(torch.matmul(x_conv, self.W_o) + torch.matmul(self.h, self.U_o) + self.b_o)
+        f = F.sigmoid(torch.matmul(x_conv, self.W_f) + torch.matmul(self.h, self.U_f) + self.b_f)  # m.nxq
+        i = F.sigmoid(torch.matmul(x_conv, self.W_i) + torch.matmul(self.h, self.U_i) + self.b_i)  # m.nxq
+        o = F.sigmoid(torch.matmul(x_conv, self.W_o) + torch.matmul(self.h, self.U_o) + self.b_o)  # m.nxq
 
-        update_c = F.sigmoid(torch.matmul(x_conv, self.W_c) + torch.matmul(self.h, self.U_c) + self.b_c)
-        self.c = f @ self.c + i @ update_c
-        self.h = o @ F.sigmoid(self.c)
+        update_c = F.sigmoid(torch.matmul(x_conv, self.W_c) + torch.matmul(self.h, self.U_c) + self.b_c)  # m.nxq
+        self.c = torch.multiply(f, self.c) + torch.multiply(i, update_c)
+        self.h = torch.multiply(o, F.sigmoid(self.c))
 
-        delta_x = nn.tanh(torch.matmul(self.c, self.W_out) + self.b_out)
+        delta_x = F.tanh(torch.matmul(self.c, self.W_out) + self.b_out)
+        delta_x = delta_x.flatten().reshape(m, n)
         return delta_x
 
 
@@ -89,6 +94,7 @@ class BilinearChebConv(nn.Module):
             p_order_col (int): Chebyshev order for columns (items).
         """
         super().__init__()
+        self.device = config.device
         self.out_channels = config.out_channels
         self.p_row = config.p_order_row
         self.p_col = config.p_order_col
@@ -187,7 +193,7 @@ class MGCNN(nn.Module):
         """The shape of x is mxn"""
         self.rnn.reset_hidden_states()
         for _ in range(self.nb_iterations_rnn):
-            x = self.conv(x)  # mxnxq
-            dx = self.rnn(x)  # mxn
+            x_conv = self.conv(x)  # qxmxn
+            dx = self.rnn(x_conv)  # mxn
             x = x + dx  # mxn
         return x  # mxn

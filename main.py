@@ -32,14 +32,12 @@ if __name__ == "__main__":
     # dataset_train = GraphDataset(data_train, config)
     # dataset_test = GraphDataset(data_test, config)
     model = model.to(config.device)
-    """summary(
+    summary(
         model,
         depth=5,
         input_size=(data['M'].shape[0], data['M'].shape[1]),
-        )"""
+        )
 
-    x = torch.tensor(data['M']).to(config.device)
-    model(x)
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config.learning_rate,
