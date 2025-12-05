@@ -1,33 +1,29 @@
 """The training loop"""
 
-from torch.utils.data import DataLoader
-
 from multi_graph_cnn.test import find_loss_test
 from multi_graph_cnn.utils import get_logger
 
 log = get_logger()
 
 
-def train_loop(model, dataset_train, dataset_test, optimizer, loss, config):
-    train_loader = DataLoader(dataset_train, batch_size=config.batch_size, shuffle=True)
-    test_loader = DataLoader(dataset_test, batch_size=config.batch_size, shuffle=False)
-
-    log.info(f"Step 0: val: {find_loss_test(model, test_loader, config)}")
+def train_loop(model, data, O_training, O_val, O_test, optimizer, loss, loss_rmse, config):
+    data = data.to(config.device)
+    model.eval()
+    loss_val, loss_val_rmse = find_loss_test(model, data, O_val, loss, loss_rmse, config)
+    log.info(f"Step 0: val: {loss_val:.3f} - val predict: {loss_val_rmse:.3f}")
     for i in range(1, config.n_epoch + 1):
         log_loss = []
         model.train()
-        for x_train, y_train in train_loader:
-            x_train = x_train.to(config.device)
-            y_train = y_train.to(config.device)
-            _, loss = model(x_train, y_train)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            # Log
-            log_loss.append(loss.item())
-        loss_test = find_loss_test(model, test_loader, config)
+        data_training = data * O_training
+        loss_train = loss(model(data_training))
+        loss_train.backward()
+        optimizer.step()
+        optimizer.zero_grad()
 
         if i % config.log_each == 0:
+            loss_val, loss_val_rmse = find_loss_test(model, data, O_val, loss, loss_rmse, config)
             log.info(
-                f"Step {i}: train: {(sum(log_loss) / len(log_loss)):.3f} - test: {loss_test:.3f}"
+                f"Step {i}: train: {loss_train.item():.3f} - val: {loss_val:.3f} - val predict: {loss_val_rmse:.3f}"
                 )
+    loss_test, loss_test_rmse = find_loss_test(model, data, O_test, loss, loss_rmse, config)
+    log.info(f"Test data: test: {loss_test:.3f} - test predict: {loss_test_rmse:.3f}")
