@@ -12,7 +12,7 @@ from multi_graph_cnn.model import MGCNN
 from multi_graph_cnn.training import train_loop
 from multi_graph_cnn.loss import rmse, DirichletReguLoss
 from multi_graph_cnn.utils import sparse_mx_to_torch
-from multi_graph_cnn.test import find_loss_test
+from multi_graph_cnn.test import compute_val_loss
 
 
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
-    loss_test, loss_test_rmse = find_loss_test(
+    loss_test, loss_test_rmse = compute_val_loss(
         model, data, O_training, O_test, loss, loss_rmse, config
         )
     log.info(f"Test data: test: {loss_test:.2e} - test predict: {loss_test_rmse:.2e}")
