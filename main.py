@@ -65,7 +65,9 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
-    loss_test, loss_test_rmse = find_loss_test(model, data, O_test, loss, loss_rmse, config)
+    loss_test, loss_test_rmse = find_loss_test(
+        model, data, O_training, O_test, loss, loss_rmse, config
+        )
     log.info(f"Test data: test: {loss_test:.2e} - test predict: {loss_test_rmse:.2e}")
 
     log.info("✅ Pipeline completed successfully")
