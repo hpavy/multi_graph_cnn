@@ -18,11 +18,11 @@ def normalize_x(x, min_val=1, max_val=5):
     return min_val + (max_val - min_val) * (x - curr_min) / denom
 
 class DirichletReguLoss(nn.Module):
-    def __init__(self, L_row, L_col,config):
+    def __init__(self, L_row, L_col, config):
         super().__init__()
         self.L_row = L_row
         self.L_col = L_col
-        self.gamma =config.gamma
+        self.gamma = float(config.gamma)
 
     def forward(self, X, Y):
         """

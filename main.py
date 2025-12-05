@@ -33,6 +33,10 @@ if __name__ == "__main__":
 
     L_row = sparse_mx_to_torch(L_row).to(config.device)
     L_col = sparse_mx_to_torch(L_col).to(config.device)
+
+    L_row = L_row - torch.eye(L_row.shape[0], device=config.device)
+    L_col = L_col - torch.eye(L_col.shape[0], device=config.device)
+
     model = MGCNN(L_row, L_col, config)
     model = model.to(config.device)
     summary(
@@ -62,6 +66,6 @@ if __name__ == "__main__":
         log.warning("Training interrupted by user.")
 
     loss_test, loss_test_rmse = find_loss_test(model, data, O_test, loss, loss_rmse, config)
-    log.info(f"Test data: test: {loss_test:.3f} - test predict: {loss_test_rmse:.3f}")
+    log.info(f"Test data: test: {loss_test:.2e} - test predict: {loss_test_rmse:.2e}")
 
     log.info("✅ Pipeline completed successfully")
