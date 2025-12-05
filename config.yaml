@@ -12,6 +12,7 @@ out_channels : 32
 learning_rate : 1e-3
 p_order_row : 5
 p_order_col : 5
+gamma : 1e-8
 
 # Logging 
 log_each : 10
