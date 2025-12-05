@@ -47,7 +47,7 @@ if __name__ == "__main__":
         # weight_decay=config.weight_decay,
         )
 
-    loss = DirichletReguLoss(L_row, L_col)
+    loss = DirichletReguLoss(L_row, L_col,config)
     loss_rmse = rmse
 
     data = torch.tensor(data["M"]).to(config.device)

@@ -15,7 +15,7 @@ def train_loop(model, data, O_training, O_val, O_test, optimizer, loss, loss_rms
     for i in range(1, config.n_epoch + 1):
         model.train()
         data_training = data_training_init.clone()
-        loss_train = loss(model(data_training), data_training_init)
+        loss_train = loss(model(data_training), data_training_init,config.gamma)
         loss_train.backward()
         optimizer.step()
         optimizer.zero_grad()
