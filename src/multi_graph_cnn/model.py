@@ -4,8 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from multi_graph_cnn.utils import sparse_mx_to_torch
-
 
 class RNN(nn.Module):
     def __init__(self, config):
@@ -183,8 +181,6 @@ class MGCNN(nn.Module):
     def __init__(self, L_row, L_col, config):
         super().__init__()
         self.device = config.device
-        L_row = sparse_mx_to_torch(L_row).to(self.device)
-        L_col = sparse_mx_to_torch(L_col).to(self.device)
         self.conv = BilinearChebConv(L_row, L_col, config)
         self.rnn = RNN(config)
         self.nb_iterations_rnn = config.nb_iterations_rnn

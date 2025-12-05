@@ -3,10 +3,10 @@ from torch import nn
 
 
 class DirichletReguLoss(nn.Module):
-    def __init__(self, Lrow, Lcol):
+    def __init__(self, L_row, L_col):
         super().__init__()
-        self.Lrow = Lrow
-        self.Lcol = Lcol
+        self.L_row = L_row
+        self.L_col = L_col
 
     def forward(self, X, Y):
         """
@@ -14,8 +14,8 @@ class DirichletReguLoss(nn.Module):
         Y : known entries, values of zero are considered to be unknown
         """
 
-        dirichlet_row = torch.trace(X.T @ self.Lrow @ X)
-        dirichlet_col = torch.trace(X @ self.Lcol @ X.T)
+        dirichlet_row = torch.trace(X.T @ self.L_row @ X)
+        dirichlet_col = torch.trace(X @ self.L_col @ X.T)
 
         mask = Y > 0
         regularization_term = torch.norm(mask * (X - Y))

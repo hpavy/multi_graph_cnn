@@ -6,10 +6,12 @@ from pathlib import Path
 import torch
 from torchinfo import summary
 
-from multi_graph_cnn.utils import get_logger, load_config, compute_loss
+from multi_graph_cnn.utils import get_logger, load_config
 from multi_graph_cnn.data import read_data, split_data, compute_the_laplacians
 from multi_graph_cnn.model import MGCNN
 from multi_graph_cnn.training import train_loop
+from multi_graph_cnn.loss import rmse, DirichletReguLoss
+from multi_graph_cnn.utils import sparse_mx_to_torch
 
 
 if __name__ == "__main__":
@@ -27,6 +29,8 @@ if __name__ == "__main__":
     config.output_dir = str(dir_path)
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    L_row = sparse_mx_to_torch(L_row).to(config.device)
+    L_col = sparse_mx_to_torch(L_col).to(config.device)
     model = MGCNN(L_row, L_col, config)
     model = model.to(config.device)
     summary(
@@ -40,10 +44,9 @@ if __name__ == "__main__":
         lr=float(config.learning_rate),
         # weight_decay=config.weight_decay,
         )
-    ###    Delete those two lines
-    loss = lambda x: x.mean() # compute_loss(config)
-    loss_rmse = lambda x: x.mean() 
-    ###
+
+    loss = DirichletReguLoss(L_row, L_col)
+    loss_rmse = rmse
 
     data = torch.tensor(data["M"]).to(config.device)
     O_training = torch.tensor(O_training).to(config.device)

@@ -11,11 +11,11 @@ def train_loop(model, data, O_training, O_val, O_test, optimizer, loss, loss_rms
     model.eval()
     loss_val, loss_val_rmse = find_loss_test(model, data, O_val, loss, loss_rmse, config)
     log.info(f"Step 0: val: {loss_val:.3f} - val predict: {loss_val_rmse:.3f}")
+    data_training_init = data * O_training
     for i in range(1, config.n_epoch + 1):
-        log_loss = []
         model.train()
-        data_training = data * O_training
-        loss_train = loss(model(data_training))
+        data_training = data_training_init.clone()
+        loss_train = loss(model(data_training), data_training_init)
         loss_train.backward()
         optimizer.step()
         optimizer.zero_grad()

@@ -50,10 +50,6 @@ def extract_nested_dict(d: dict, type_element=None):
 
     return res
 
-def compute_loss(config):
-    """Give the function in order to compute the loss"""
-    pass # TODO
-
 def sparse_mx_to_torch(sparse_mx):
     return torch.tensor(sparse_mx.toarray(), dtype=torch.float32)
 
