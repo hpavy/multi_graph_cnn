@@ -25,5 +25,3 @@ def train_loop(model, data, O_training, O_val, O_test, optimizer, loss, loss_rms
             log.info(
                 f"Step {i}: train: {loss_train.item():.3f} - val: {loss_val:.3f} - val predict: {loss_val_rmse:.3f}"
                 )
-    loss_test, loss_test_rmse = find_loss_test(model, data, O_test, loss, loss_rmse, config)
-    log.info(f"Test data: test: {loss_test:.3f} - test predict: {loss_test_rmse:.3f}")

@@ -5,7 +5,7 @@ dataset_name: synthetic_netflix
 
 # Hyperparameters
 batch_size : 1
-n_epoch : 2500
+n_epoch : 25000
 rate_training_validation : 0.5
 nb_iterations_rnn : 10
 out_channels : 32
