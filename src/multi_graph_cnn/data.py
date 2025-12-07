@@ -38,6 +38,7 @@ def read_data(name_data):
     file_path = "data/" + name_data + "/" + data_names[name_data]
     with h5py.File(file_path, "r") as f:
         data = extract_nested_dict(f, type_element=np.array)
+
     if name_data == "synthetic_netflix":
         M = np.asarray(data['M']).astype(np.float32).T
         O = np.asarray(data['O']).astype(np.float32).T
@@ -99,6 +100,6 @@ def split_data(data, config):
 def compute_the_laplacians(data):
     """Compute the laplacians"""
     W_row, W_col = data["W_row"], data["W_col"]
-    L_row = sp.csgraph.laplacian(W_row, normed=True) #it is laplacian normalization not the one to be sure it is between -1 et 1
+    L_row = sp.csgraph.laplacian(W_row, normed=True) #it is laplacian normalization but it does not mean its value are between -1 et 1
     L_col = sp.csgraph.laplacian(W_col, normed=True)
     return L_row, L_col
