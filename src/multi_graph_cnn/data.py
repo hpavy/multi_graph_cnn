@@ -75,26 +75,26 @@ def split_data(data, config):
     list_idx = [k for k in range(number_samples)]
     np.random.shuffle(list_idx)
 
-    idx_val = list_idx[:int(number_samples*config.rate_training_validation)]
-    idx_train = list_idx[int(number_samples*config.rate_training_validation):]
+    idx_tr_target = list_idx[:int(number_samples*config.rate_training)]
+    idx_train = list_idx[int(number_samples*config.rate_training):]
 
-    pos_val_samples = (indices[0][idx_val], indices[1][idx_val])
+    pos_tr_target_samples = (indices[0][idx_tr_target], indices[1][idx_tr_target])
     pos_tr_samples = (indices[0][idx_train], indices[1][idx_train])
 
-    O_val = np.zeros_like(M)
+    O_train_target = np.zeros_like(M)
     O_train = np.zeros_like(M)
 
-    for k in range(len(pos_val_samples[0])):
-        O_val[pos_val_samples[0][k], pos_val_samples[1][k]] = 1
+    for k in range(len(pos_tr_target_samples[0])):
+        O_train_target[pos_tr_target_samples[0][k], pos_tr_target_samples[1][k]] = 1
 
     for k in range(len(pos_tr_samples[0])):
         O_train[pos_tr_samples[0][k], pos_tr_samples[1][k]] = 1
 
     log.info(f"The number of element in O_train is: {int(np.sum(O_train).item())}")
-    log.info(f"The number of element in O_val is: {int(np.sum(O_val).item())}")
+    log.info(f"The number of element in O_train_target is: {int(np.sum (O_train_target).item())}")
     log.info(f"The number of element in O_test is: {int(np.sum(O_test).item())}")
     
-    return O_train, O_val, O_test
+    return O_train, O_train_target, O_test
 
 
 def compute_the_laplacians(data):

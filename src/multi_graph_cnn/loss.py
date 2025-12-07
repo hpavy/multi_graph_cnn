@@ -35,8 +35,8 @@ class DirichletReguLoss(nn.Module):
 
         X = normalize_x(X)
         mask = Y > 0
-        regularization_term = torch.norm(mask * (X - Y)) 
-        regularization_term = torch.square(regularization_term) / torch.sum(mask)
+        regularization_term = torch.norm(mask * (X - Y)) ** 2
+        regularization_term = regularization_term / torch.sum(mask)
         if split_components:
             return dirichlet_row, dirichlet_col, regularization_term
         else:

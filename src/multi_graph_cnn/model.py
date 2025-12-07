@@ -53,6 +53,11 @@ class RNN(nn.Module):
         nn.init.xavier_uniform_(self.W_c)
         nn.init.xavier_uniform_(self.U_c)
         nn.init.xavier_uniform_(self.W_out)
+        nn.init.zeros_(self.b_f)
+        nn.init.zeros_(self.b_i)
+        nn.init.zeros_(self.b_o)
+        nn.init.zeros_(self.b_c)
+        nn.init.zeros_(self.b_out)
 
     def reset_hidden_states(self):
         self.h = None
