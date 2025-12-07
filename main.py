@@ -5,6 +5,7 @@ from pathlib import Path
 
 import random
 import torch
+import numpy as np
 from torchinfo import summary
 
 from multi_graph_cnn.utils import get_logger, load_config
@@ -27,6 +28,7 @@ if __name__ == "__main__":
 
     seed = config.seed 
     random.seed(seed)
+    np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
@@ -74,7 +76,7 @@ if __name__ == "__main__":
 
     log.info("Starting training...")
     try:
-        train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config)
+        train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer)
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
