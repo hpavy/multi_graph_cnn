@@ -28,6 +28,7 @@ if __name__ == "__main__":
 
     seed = config.seed 
     random.seed(seed)
+    np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
