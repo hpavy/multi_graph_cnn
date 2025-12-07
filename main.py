@@ -12,7 +12,7 @@ from multi_graph_cnn.model import MGCNN
 from multi_graph_cnn.training import train_loop
 from multi_graph_cnn.loss import rmse, DirichletReguLoss
 from multi_graph_cnn.utils import sparse_mx_to_torch
-from multi_graph_cnn.test import compute_val_loss
+from multi_graph_cnn.test import compute_val_loss, run_tests
 
 
 
@@ -65,20 +65,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
-    _, loss_test_rmse = compute_val_loss(
-        model, data, O_training + O_val + O_test,
-        torch.ones_like(O_training), loss, loss_rmse, config
-        )
-    _, loss_test_just_train = compute_val_loss(
-        model, data, O_training,
-        torch.ones_like(O_training), loss, loss_rmse, config
-        )
-    _, loss_test_just_train_val = compute_val_loss(
-        model, data, O_training + O_val,
-        torch.ones_like(O_training), loss, loss_rmse, config
-        )
-    log.info(f"Test data: predict on train: {loss_test_just_train:.2e}")
-    log.info(f"Test data: predict on train and val: {loss_test_just_train_val:.2e}")
-    log.info(f"Test data: predict on train and val and test: {loss_test_rmse:.2e}")
+    run_tests(model, data, O_training, O_val, O_test, loss, loss_rmse, config)
 
     log.info("✅ Pipeline completed successfully")
