@@ -38,7 +38,7 @@ def run_tests(model, data, O_training, O_train_target, O_test, loss, loss_rmse, 
     diff_steps = model.forward_all_diffusion_steps(data * O_training)
     loss_diff_iter = []
     for diff_step in diff_steps: 
-        loss_value = loss_rmse(data, diff_step)
+        loss_value = loss_rmse(diff_step, data)
         loss_diff_iter.append(f"{loss_value:.2e}")
     log.info(f"Test data: predict on train : RMSE after each diffusion step : {loss_diff_iter}")
     
