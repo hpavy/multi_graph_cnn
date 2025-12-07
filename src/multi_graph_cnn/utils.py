@@ -6,6 +6,9 @@ import numpy as np
 import yaml
 import logging
 
+from torch.utils.tensorboard import SummaryWriter # <--- Import this
+import os
+
 import torch
 
 
@@ -52,4 +55,11 @@ def extract_nested_dict(d: dict, type_element=None):
 
 def sparse_mx_to_torch(sparse_mx):
     return torch.tensor(sparse_mx.toarray(), dtype=torch.float32)
+
+
+def get_tensorboard_writer(config):
+    """Creates a TensorBoard SummaryWriter in the output directory"""
+    # Saves logs to: saved_models/YYYYMMDD-HHMMSS/runs/
+    log_dir = os.path.join(config.output_dir, config.tensorboard_dir)
+    return SummaryWriter(log_dir=log_dir)
 
