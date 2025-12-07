@@ -35,8 +35,8 @@ class DirichletReguLoss(nn.Module):
 
         X = normalize_x(X)
         mask = Y > 0
-        regularization_term = torch.norm(mask * (X - Y)) ** 2
-        regularization_term / torch.sum(mask)
+        regularization_term = torch.norm(mask * (X - Y)) 
+        regularization_term = torch.square(regularization_term) / torch.sum(mask)
         if split_components:
             return dirichlet_row, dirichlet_col, regularization_term
         else:
@@ -47,6 +47,8 @@ def rmse(learnt, target):
     """Check distance between learnt and target for non zero value of target"""
     learnt_norm=normalize_x(learnt)
     mask = target != 0
-    masked_x = mask * learnt_norm
-    mse_fun = nn.MSELoss()
-    return torch.sqrt(mse_fun(masked_x, target))
+    # Calculate squared error only on the mask
+    diff = (learnt_norm - target) * mask
+    mse = torch.sum(diff ** 2) / torch.sum(mask) # Divide by count of ratings, not matrix size
+    
+    return torch.sqrt(mse)
