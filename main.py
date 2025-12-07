@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 
 import random
-import numpy as np
 import torch
 from torchinfo import summary
 
@@ -16,6 +15,8 @@ from multi_graph_cnn.loss import rmse, DirichletReguLoss
 from multi_graph_cnn.utils import sparse_mx_to_torch
 from multi_graph_cnn.test import run_tests
 
+from multi_graph_cnn.utils import get_tensorboard_writer
+
 
 
 if __name__ == "__main__":
@@ -26,7 +27,6 @@ if __name__ == "__main__":
 
     seed = config.seed 
     random.seed(seed)
-    np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
@@ -68,11 +68,26 @@ if __name__ == "__main__":
     O_test = torch.tensor(O_test).to(config.device)
     O_target = torch.tensor(O_target).to(config.device)
 
+    # Initialize TensorBoard Writer
+    writer = get_tensorboard_writer(config)
+    log.info(f" TensorBoard logging enabled in: {config.output_dir}/{config.tensorboard_dir}")
+
     log.info("Starting training...")
     try:
         train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config)
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
+
+    # Close the writer
+    writer.close()
+
+    # [OPTIONAL] Load the best model before running final tests
+    best_model_path = f"{config.output_dir}/best_model.pth"
+    try:
+        model.load_state_dict(torch.load(best_model_path))
+        log.info("🏆 Loaded best model for final testing.")
+    except Exception as e:
+        log.warning("Could not load best model (maybe none was saved?), using last state.")
 
     run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
 

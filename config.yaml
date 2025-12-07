@@ -16,7 +16,8 @@ gamma : 1e-8
 
 # Logging 
 log_each : 10
-log_level : INFO # DEBUG, INFO, WARNING, ERROR
+log_level : INFO # DEBUG, INFO, WARNING, ERRO
+tensorboard_dir : "runs"
 
 # Reproductibility
 seed : 42
