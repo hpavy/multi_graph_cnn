@@ -3,6 +3,8 @@
 from datetime import datetime
 from pathlib import Path
 
+import random
+import numpy as np
 import torch
 from torchinfo import summary
 
@@ -12,7 +14,7 @@ from multi_graph_cnn.model import MGCNN
 from multi_graph_cnn.training import train_loop
 from multi_graph_cnn.loss import rmse, DirichletReguLoss
 from multi_graph_cnn.utils import sparse_mx_to_torch
-from multi_graph_cnn.test import compute_val_loss, run_tests
+from multi_graph_cnn.test import run_tests
 
 
 
@@ -22,8 +24,15 @@ if __name__ == "__main__":
     log = get_logger("main", config.log_level)
     log.debug(config)
 
+    seed = config.seed 
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+
     data = read_data(config.dataset_name)
-    O_training, O_val, O_test = split_data(data, config)
+    O_training, O_target, O_test = split_data(data, config)
     L_row, L_col = compute_the_laplacians(data)
 
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -57,14 +66,14 @@ if __name__ == "__main__":
     data = torch.tensor(data["M"]).to(config.device)
     O_training = torch.tensor(O_training).to(config.device)
     O_test = torch.tensor(O_test).to(config.device)
-    O_val = torch.tensor(O_val).to(config.device)
+    O_target = torch.tensor(O_target).to(config.device)
 
     log.info("Starting training...")
     try:
-        train_loop(model, data, O_training, O_val, O_test, optimizer, loss, loss_rmse, config)
+        train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config)
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
-    run_tests(model, data, O_training, O_val, O_test, loss, loss_rmse, config)
+    run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
 
     log.info("✅ Pipeline completed successfully")

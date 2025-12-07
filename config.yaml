@@ -6,7 +6,7 @@ dataset_name: synthetic_netflix
 # Hyperparameters
 batch_size : 1
 n_epoch : 25000
-rate_training_validation : 0.5
+rate_training: 0.5
 nb_iterations_rnn : 10
 out_channels : 32
 learning_rate : 1e-3
@@ -17,3 +17,6 @@ gamma : 1e-8
 # Logging 
 log_each : 10
 log_level : INFO # DEBUG, INFO, WARNING, ERROR
+
+# Reproductibility
+seed : 42
