@@ -64,14 +64,26 @@ class RNN(nn.Module):
         x_conv = x_conv.permute(1, 2, 0)  # mxnxq
         x_conv = x_conv.reshape(-1, x_conv.shape[-1])
         if self.h is None:
-            self.h = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(self.device)  # m.nxq
-            self.c = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(self.device)  # m.nxq
+            self.h = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(
+                self.device
+            )  # m.nxq
+            self.c = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(
+                self.device
+            )  # m.nxq
 
-        f = F.sigmoid(torch.matmul(x_conv, self.W_f) + torch.matmul(self.h, self.U_f) + self.b_f)  # m.nxq
-        i = F.sigmoid(torch.matmul(x_conv, self.W_i) + torch.matmul(self.h, self.U_i) + self.b_i)  # m.nxq
-        o = F.sigmoid(torch.matmul(x_conv, self.W_o) + torch.matmul(self.h, self.U_o) + self.b_o)  # m.nxq
+        f = F.sigmoid(
+            torch.matmul(x_conv, self.W_f) + torch.matmul(self.h, self.U_f) + self.b_f
+        )  # m.nxq
+        i = F.sigmoid(
+            torch.matmul(x_conv, self.W_i) + torch.matmul(self.h, self.U_i) + self.b_i
+        )  # m.nxq
+        o = F.sigmoid(
+            torch.matmul(x_conv, self.W_o) + torch.matmul(self.h, self.U_o) + self.b_o
+        )  # m.nxq
 
-        update_c = F.sigmoid(torch.matmul(x_conv, self.W_c) + torch.matmul(self.h, self.U_c) + self.b_c)  # m.nxq
+        update_c = F.sigmoid(
+            torch.matmul(x_conv, self.W_c) + torch.matmul(self.h, self.U_c) + self.b_c
+        )  # m.nxq
         self.c = torch.multiply(f, self.c) + torch.multiply(i, update_c)
         self.h = torch.multiply(o, F.sigmoid(self.c))
 
@@ -99,11 +111,9 @@ class BilinearChebConv(nn.Module):
 
         # Theta: Learnable parameters for every combination of row/col polynomial orders.
         # Shape: (P_row+1, P_col+1, In_Channels, Out_Channels)
-        self.theta = nn.Parameter(torch.Tensor(
-            self.p_row + 1,
-            self.p_col + 1,
-            self.out_channels
-        ))
+        self.theta = nn.Parameter(
+            torch.Tensor(self.p_row + 1, self.p_col + 1, self.out_channels)
+        )
 
         self.bias = nn.Parameter(torch.Tensor(self.out_channels))
         self.reset_parameters()
@@ -135,7 +145,7 @@ class BilinearChebConv(nn.Module):
 
         for k in range(2, order + 1):
             # Recurrence: T_k = 2 * L * T_{k-1} - T_{k-2}
-            basis[k] = 2 * torch.matmul(L, basis[k-1]) - basis[k-2]
+            basis[k] = 2 * torch.matmul(L, basis[k - 1]) - basis[k - 2]
 
         return basis
 
@@ -150,7 +160,6 @@ class BilinearChebConv(nn.Module):
             Output (Out_Channels, M, N)
         """
 
-
         # 2. Compute the Bilinear Convolution using Einsum
         # This performs: Sum( Theta * (Tr @ X @ Tc) )
 
@@ -164,14 +173,14 @@ class BilinearChebConv(nn.Module):
 
         # Step A: Transform Rows (Tr * X)
         # (p_row, m, m) @ (c, m, n) -> (p_row, c, m, n)
-        x_row_transformed = torch.einsum('imp, pn -> imn', self.Tr, x)
+        x_row_transformed = torch.einsum("imp, pn -> imn", self.Tr, x)
         # Step B: Transform Columns ((Tr * X) * Tc)
         # Note: We multiply by Tc^T implicitly because X is (M, N) and Tc is (N, N)
         # (p_row, c, m, n) @ (p_col, n, n) -> (p_row, p_col, c, m, n)
-        basis_features = torch.einsum('imn, jnk -> ij mk', x_row_transformed, self.Tc)
+        basis_features = torch.einsum("imn, jnk -> ij mk", x_row_transformed, self.Tc)
         # Step C: Linearly combine using Theta
         # (p_row, p_col, c, m, n) * (p_row, p_col, c, o) -> (o, m, n)
-        out = torch.einsum('ij  m n, ij  o -> o m n', basis_features, self.theta)
+        out = torch.einsum("ij  m n, ij  o -> o m n", basis_features, self.theta)
         # 3. Add Bias
         out = out + self.bias.view(-1, 1, 1)
         out = F.relu(out)
@@ -194,3 +203,14 @@ class MGCNN(nn.Module):
             dx = self.rnn(x_conv)  # mxn
             x = x + dx  # mxn
         return x  # mxn
+
+    def forward_all_diffusion_steps(self, x) -> list[torch.Tensor]:
+        """The shape of x is mxn"""
+        self.rnn.reset_hidden_states()
+        list_diffusion_step = []
+        for _ in range(self.nb_iterations_rnn):
+            x_conv = self.conv(x)  # qxmxn
+            dx = self.rnn(x_conv)  # mxn
+            x = x + dx  # mxn
+            list_diffusion_step.append(x)
+        return list_diffusion_step  # self.nb_iterations_rnn x m x n
