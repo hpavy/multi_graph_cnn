@@ -63,3 +63,30 @@ def get_tensorboard_writer(config):
     log_dir = os.path.join(config.output_dir, config.tensorboard_dir)
     return SummaryWriter(log_dir=log_dir)
 
+
+def get_svd_initialization(sparse_matrix, rank, device):
+    """
+    Performs SVD on the sparse rating matrix to initialize W and H.
+    Args:
+        sparse_matrix (torch.Tensor): The input matrix M (MxN).
+        rank (int): The rank 'r' for factorization.
+    Returns:
+        W (MxR), H (NxR)
+    """
+    # 1. Ensure matrix is on the correct device
+    matrix = sparse_matrix.to(device)
+
+    # 2. Perform Randomized SVD (Fast for large matrices)
+    # U: (M, r), S: (r,), V: (N, r)
+    U, S, V = torch.svd_lowrank(matrix, q=rank, niter=2)
+
+    # 3. Distribute Sigma to balance the factors (Symmetric initialization)
+    # W = U * sqrt(S)
+    # H = V * sqrt(S)
+    # So that W @ H.T approx M
+    sqrt_S = torch.diag(torch.sqrt(S))
+    
+    W_init = torch.matmul(U, sqrt_S)
+    H_init = torch.matmul(V, sqrt_S)
+
+    return W_init, H_init
