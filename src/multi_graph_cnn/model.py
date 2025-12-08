@@ -59,15 +59,17 @@ class RNN(nn.Module):
         nn.init.zeros_(self.b_c)
         nn.init.zeros_(self.b_out)
 
-    def reset_hidden_states(self):
-        self.h = None
-        self.c = None
+    def reset_hidden_states(self, batch_size=None): # Add optional argument
+        if batch_size is not None:
+            self.h = torch.zeros(batch_size, self.n_conv_feat).to(self.device)
+            self.c = torch.zeros(batch_size, self.n_conv_feat).to(self.device)
+        else:
+            self.h = None
+            self.c = None
 
     def forward(self, x_conv):
         """qxmxn -> mxn"""
-        q, m, n = x_conv.shape
-        x_conv = x_conv.permute(1, 2, 0)  # mxnxq
-        x_conv = x_conv.reshape(-1, x_conv.shape[-1])
+
         if self.h is None:
             self.h = torch.zeros([x_conv.shape[0], self.n_conv_feat]).to(
                 self.device
@@ -93,7 +95,7 @@ class RNN(nn.Module):
         self.h = torch.multiply(o, F.sigmoid(self.c))
 
         delta_x = F.tanh(torch.matmul(self.c, self.W_out) + self.b_out)
-        delta_x = delta_x.flatten().reshape(m, n)
+        
         return delta_x
 
 
@@ -187,8 +189,10 @@ class BilinearChebConv(nn.Module):
         out = torch.einsum("ij  m n, ij  o -> o m n", basis_features, self.theta)
         # 3. Add Bias
         out = out + self.bias.view(-1, 1, 1)
-        out = F.relu(out)
-        return out
+        x_conv = F.relu(out)
+        x_conv = x_conv.permute(1, 2, 0)  # mxnxq
+        x_conv = x_conv.reshape(-1, x_conv.shape[-1])
+        return x_conv
 
 
 class MonoChebConv(nn.Module):
@@ -207,7 +211,7 @@ class MonoChebConv(nn.Module):
         self.device = config.device
         self.in_channels = config.rank
         self.out_channels = config.out_channels
-        self.order = config.order
+        self.order = config.p_order
 
         # Theta: Learnable parameters for each polynomial order k
         # Shape: (Order+1, In_Channels, Out_Channels)
@@ -291,20 +295,26 @@ class MGCNN(nn.Module):
     def forward(self, x):
         """The shape of x is mxn"""
         self.rnn.reset_hidden_states()
+        m,n = x.shape
         for _ in range(self.nb_iterations_rnn):
             x_conv = self.conv(x)  # qxmxn
             dx = self.rnn(x_conv)  # mxn
+            dx = dx.flatten().reshape(m, n)
             x = x + dx  # mxn
         return x  # mxn
 
     def forward_all_diffusion_steps(self, x) -> list[torch.Tensor]:
         """The shape of x is mxn"""
         self.rnn.reset_hidden_states()
+        m,n = x.shape
+        
         list_diffusion_step = []
         for _ in range(self.nb_iterations_rnn):
             x_conv = self.conv(x)  # qxmxn
             dx = self.rnn(x_conv)  # mxn
+            dx = dx.flatten().reshape(m, n)
             x = x + dx  # mxn
+            
             list_diffusion_step.append(x)
         return list_diffusion_step  # self.nb_iterations_rnn x m x n
 

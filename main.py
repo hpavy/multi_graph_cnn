@@ -44,7 +44,7 @@ if __name__ == "__main__":
         model_type ="sRGCNN"
         config = load_config("config_sRGCNN.yaml")
         log = get_logger("main", config.log_level)
-        log.info(f" Lancement du pipeline avec le modèle : {getattr(config, 'model_type', 'MGCNN')}")
+        log.info(f" Lancement du pipeline avec le modèle : {model_type}")
         log.debug(config)
     
         if args.epochs:
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         summary(
             model,
             depth=5,
-            input_size=((W.shape[0], W.shape[1]),(H.shape[0],H.shape[1])),
+            input_data = [W,H],
             )
 
         optimizer = torch.optim.AdamW(
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
         log.info("Starting training...")
         try:
-            train_loop_sRGCNN(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer)
+            train_loop_sRGCNN(model, W,H,data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer)
         except KeyboardInterrupt:
             log.warning("Training interrupted by user.")
 
@@ -129,10 +129,10 @@ if __name__ == "__main__":
         
     else:
 
-        model_type ="sRGCNN"
-        config = load_config("config_sRGCNN.yaml")
+        model_type ="MGCNN"
+        config = load_config("config_MGCNN.yaml")
         log = get_logger("main", config.log_level)
-        log.info(f" Lancement du pipeline avec le modèle : {getattr(config, 'model_type', 'MGCNN')}")
+        log.info(f" Lancement du pipeline avec le modèle : {model_type}")
         log.debug(config)
     
         if args.epochs:

@@ -74,7 +74,7 @@ def get_svd_initialization(sparse_matrix, rank, device):
         W (MxR), H (NxR)
     """
     # 1. Ensure matrix is on the correct device
-    matrix = sparse_matrix.to(device)
+    matrix =  torch.tensor(sparse_matrix, dtype=torch.float32).to(device)
 
     # 2. Perform Randomized SVD (Fast for large matrices)
     # U: (M, r), S: (r,), V: (N, r)
