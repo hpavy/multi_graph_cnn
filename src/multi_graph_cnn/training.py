@@ -1,6 +1,7 @@
 """The training loop"""
 import os
-from multi_graph_cnn.test import compute_target_loss, compute_factorized_rmse
+from multi_graph_cnn.test import compute_target_loss
+from multi_graph_cnn.loss import compute_factorized_rmse
 from multi_graph_cnn.utils import get_logger
 import torch 
 
