@@ -8,6 +8,7 @@ import torch
 import numpy as np
 from torchinfo import summary
 
+from multi_graph_cnn.result_insights import compare_prediction
 from multi_graph_cnn.utils import get_logger, load_config
 from multi_graph_cnn.data import read_data, split_data, compute_the_laplacians
 from multi_graph_cnn.model import MGCNN
@@ -97,5 +98,7 @@ if __name__ == "__main__":
     run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
 
     compute_laplacian_factor_from_model(model, config)
+
+    compare_prediction(model, data, O_training,O_target,O_test,  config)
     
     log.info("✅ Pipeline completed successfully")
