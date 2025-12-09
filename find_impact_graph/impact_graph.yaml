@@ -11,17 +11,17 @@ proba_within_users: 0.8
 proba_within_movies: 0.8
 
 # The data
-nb_ranked: 15
+nb_ranked: 60
 mean_good_ranked: 4
 mean_bad_ranked: 2
 variance_ranking: 0.5
 
 # Hyperparameters
-rate_test: 0.1
+rate_test: 0.5
 rate_training: 0.5
 
 batch_size : 1
-n_epoch : 25
+n_epoch : 2000
 nb_iterations_rnn : 10
 out_channels: 32
 learning_rate: 1e-3
@@ -31,7 +31,7 @@ gamma: 1e-8
 
 
 # Logging 
-log_each : 1
+log_each : 20
 log_level : INFO # DEBUG, INFO, WARNING, ERRO
 tensorboard_dir : "runs"
 
