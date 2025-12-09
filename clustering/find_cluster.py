@@ -43,6 +43,4 @@ def clustering_accuracy(y_true, y_pred):
 
     acc1 = (y_true == y_pred).mean()
 
-    acc2 = (y_true == (1 - y_pred)).mean()
-
-    return max(acc1, acc2)
+    return max(acc1, 1-acc1)

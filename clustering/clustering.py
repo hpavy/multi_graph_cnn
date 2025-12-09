@@ -64,3 +64,20 @@ def generate_data(user_tastes, movie_kinds, config):
                     )
             ranking_matrix[user_id, movie_id] = ranking
     return ranking_matrix
+
+def create_stochastic_graph(cluster, p_within, nb_neigbours):
+    """
+    Create a graph where p_within is the probability to be linked to an element in the same cluster
+    And p_between is the probability to be linked to an element in an other cluster
+    """
+    nb_elem = len(cluster)
+    adjacency = np.zeros((nb_elem, nb_elem))
+
+    for i in range(nb_elem):
+        probs = np.where(cluster == cluster[i], p_within, 1 - p_within)
+        probs = probs / probs.sum()
+        neigbours = np.random.choice(len(probs), size=nb_neigbours, replace=False, p=probs)
+        neigbours = neigbours[neigbours != i]  # In case we take the node
+        adjacency[i][neigbours] = 1.
+    return adjacency + adjacency.T  # Maybe we can find a better way to do that ()
+

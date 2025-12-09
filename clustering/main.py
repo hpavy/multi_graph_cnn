@@ -20,7 +20,7 @@ from multi_graph_cnn.test import run_tests
 
 from multi_graph_cnn.utils import get_tensorboard_writer
 
-from clustering import create_cluster, create_exact_neighbours_graph, generate_data
+from clustering import create_cluster, create_exact_neighbours_graph, generate_data, create_stochastic_graph
 from find_cluster import clustering_accuracy, find_cluster_from_graph, cluster_Spectral_embedding
 from utils import compute_the_laplacians, split_ranking
 
@@ -40,10 +40,10 @@ if __name__ == "__main__":
 
     # creating the clusters and the graphs
     user_tastes, movie_kinds = create_cluster(config)
-    graph_users = create_exact_neighbours_graph(
+    graph_users = create_stochastic_graph(
         user_tastes, config.proba_within_users, config.nb_neighbour_users
         )
-    graph_movies = create_exact_neighbours_graph(
+    graph_movies = create_stochastic_graph(
         movie_kinds, config.proba_within_movies, config.nb_neighbour_movies
         )
 
