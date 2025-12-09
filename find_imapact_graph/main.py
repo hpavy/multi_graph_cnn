@@ -23,7 +23,6 @@ from utils import compute_the_laplacians, split_ranking
 
 
 if __name__ == "__main__":
-
     config = load_config("clustering/clustering_config.yaml")
     log = get_logger("main", config.log_level)
     log.debug(config)
