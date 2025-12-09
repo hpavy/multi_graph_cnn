@@ -11,7 +11,6 @@ from torchinfo import summary
 from multi_graph_cnn.utils import get_logger, load_config
 from multi_graph_cnn.data import read_data, split_data, compute_the_laplacians
 from multi_graph_cnn.model import MGCNN
-from multi_graph_cnn.training import train_loop
 from multi_graph_cnn.loss import rmse, DirichletReguLoss
 from multi_graph_cnn.utils import sparse_mx_to_torch
 from multi_graph_cnn.test import run_tests
@@ -20,10 +19,16 @@ from multi_graph_cnn.utils import get_tensorboard_writer
 
 from clustering import create_cluster, create_stochastic_graph, generate_data
 from utils import compute_the_laplacians, split_ranking
+from create_clusters import load_arrays
+from training import train_loop
+from create_clusters import save_arrays
 
+P_WITHIN = 1
 
 if __name__ == "__main__":
-    config = load_config("clustering/clustering_config.yaml")
+
+    config = load_config("find_impact_graph/impact_graph.yaml")
+    config.proba_within_user = P_WITHIN
     log = get_logger("main", config.log_level)
     log.debug(config)
 
@@ -36,7 +41,7 @@ if __name__ == "__main__":
         torch.cuda.manual_seed(seed)
 
     # creating the clusters and the graphs
-    user_tastes, movie_kinds = create_cluster(config)
+    user_tastes, movie_kinds = load_arrays("find_impact_graph/data/data.npz")
     graph_users = create_stochastic_graph(
         user_tastes, config.proba_within_users, config.nb_neighbour_users
         )
@@ -51,9 +56,9 @@ if __name__ == "__main__":
     L_row = compute_the_laplacians(graph_users)
     L_col = compute_the_laplacians(graph_movies)
 
-    now = datetime.now().strftime("%Y%m%d-%H%M%S")
-    dir_path = Path("clustering/saved_models/find_impact_graph/" + config.proba_within_users)
-    config.output_dir = str(dir_path)
+    # now = datetime.now().strftime("%Y%m%d-%H%M%S")
+    # dir_path = Path("clustering/saved_models/find_impact_graph/" + config.proba_within_users)
+    config.output_dir = f"find_impact_graph/results/proba_{P_WITHIN}"
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     L_row = torch.tensor(L_row, device=config.device, dtype=torch.float32)
@@ -89,7 +94,7 @@ if __name__ == "__main__":
 
     log.info("Starting training...")
     try:
-        train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer)
+        results = train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer)
     except KeyboardInterrupt:
         log.warning("Training interrupted by user.")
 
@@ -105,5 +110,6 @@ if __name__ == "__main__":
         log.warning("Could not load best model (maybe none was saved?), using last state.")
 
     run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
+    np.savez(config.output_dir + "/loss.npz", loss_rmse=results)
 
     log.info("✅ Pipeline completed successfully")

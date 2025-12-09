@@ -7,7 +7,8 @@ import torch
 log = get_logger()
 
 
-def train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer=None, file_to_write=None):
+def train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_rmse, config, writer =None):
+    list_loss_test_rmse = []
     data = data.to(config.device)
     model.eval()
     loss_target, loss_target_rmse = compute_target_loss(
@@ -38,6 +39,7 @@ def train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_
             loss_test, loss_test_rmse = compute_target_loss(
                 model, data, O_training, O_test, loss, loss_rmse, config
                 )
+            list_loss_test_rmse.append(loss_test_rmse.detach().cpu().numpy())
 
             # --- TENSORBOARD: Log Test Metrics ---
             if writer:
@@ -57,3 +59,4 @@ def train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_
                 save_path = os.path.join(config.output_dir, "best_model.pth")
                 torch.save(model.state_dict(), save_path)
                 log.info(f" New best model saved (RMSE: {best_test_rmse:.4f}) at step {i}")
+    return list_loss_test_rmse
