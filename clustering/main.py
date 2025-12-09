@@ -20,7 +20,7 @@ from multi_graph_cnn.test import run_tests
 
 from multi_graph_cnn.utils import get_tensorboard_writer
 
-from clustering import create_cluster, create_exact_neighbours_graph, generate_data, create_stochastic_graph
+from clustering import create_cluster, create_exact_neighbours_graph, generate_data, create_stochastic_graph,plot_graph_diagnostics
 from find_cluster import clustering_accuracy, find_cluster_from_graph, cluster_Spectral_embedding
 from utils import compute_the_laplacians, split_ranking
 
@@ -66,6 +66,11 @@ if __name__ == "__main__":
     config.output_dir = str(dir_path)
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     parser = argparse.ArgumentParser(description="Entraînement Recommender System (MGCNN vs sRGCNN)")
+
+    plot_graph_diagnostics(graph_movies,movie_kinds,str(dir_path)+"/figures_movies.png")
+    plot_graph_diagnostics(graph_movies,cluster_G_m,str(dir_path)+"/figures_movies_check.png")
+    plot_graph_diagnostics(graph_users,user_tastes,str(dir_path)+"/figures_users.png")
+    plot_graph_diagnostics(graph_users,cluster_G_u,str(dir_path)+"/figures_users_check.png")
 
     model_type ="sRGCNN"
 
