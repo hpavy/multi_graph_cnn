@@ -32,14 +32,11 @@ def find_cluster_from_graph(A):
 
     # The Fiedler vector is the eigenvector corresponding to the second smallest eigenvalue
     fiedler_vector = eigenvectors[:, 1]
-
-    # Assign clusters based on the sign of the Fiedler vector
-    clusters = np.sign(fiedler_vector)
     
     # Handle the case where sign is 0 (rare)
-    clusters[clusters == 0] = 1 
+    clusters = np.where(fiedler_vector > 0, 1, 0)
     
-    return clusters 
+    return clusters
 
 def cluster_linear_embedding(X):
     # KMeans works on numpy arrays
