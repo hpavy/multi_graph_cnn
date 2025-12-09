@@ -16,7 +16,11 @@ def compare_prediction(model, data, O_training, O_target, O_test, config):
     # savefig prediction compared to rela one 
     predict = model(data * O_training)
     predict = normalize_x(predict)
-    predict = predict.detach().numpy()
+    predict = predict.detach().cpu().numpy()
+    data = data.detach().cpu().numpy()
+    O_training = O_training.detach().cpu().numpy()
+    O_test = O_test.detach().cpu().numpy()
+    O_target = O_target.detach().cpu().numpy()
     plot_matrix_completion_duo(data, predict, "True values", "Prediction", show=False)
     plt.savefig(path_results / "heatmap_comp_real_value.png")
     plt.close()

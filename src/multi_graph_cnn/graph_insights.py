@@ -139,7 +139,7 @@ def compute_laplacian_factor_from_model(model:MGCNN, config):
     the convolution in the graph domain 
     """
     # Get convolution paramaters 
-    coef_cheby = model.conv.theta.detach().numpy()
+    coef_cheby = model.conv.theta.detach().cpu().numpy()
     result_coefs = []
     for q in range(config.out_channels):
         # Compute coefficients in the canonical basis 
