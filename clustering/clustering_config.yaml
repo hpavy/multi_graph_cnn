@@ -21,6 +21,7 @@ variance_ranking: 0.5
 batch_size : 1
 rank : 10
 n_epoch : 10000
+rate_test : 0.1
 rate_training: 0.5
 nb_iterations_rnn : 10
 out_channels : 32
