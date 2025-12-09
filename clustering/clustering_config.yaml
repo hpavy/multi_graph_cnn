@@ -14,6 +14,7 @@ proba_within_movies: 0.8
 nb_ranked: 15
 mean_good_ranked: 4
 mean_bad_ranked: 2
+variance_ranking: 0.5
 
 # Hyperparameters
 rate_test: 0.1
@@ -21,13 +22,12 @@ rate_training: 0.5
 
 batch_size : 1
 n_epoch : 25000
-rate_training: 0.5
 nb_iterations_rnn : 10
-out_channels : 32
-learning_rate : 1e-3
-p_order_row : 5
-p_order_col : 5
-gamma : 1e-8
+out_channels: 32
+learning_rate: 1e-3
+p_order_row: 5
+p_order_col: 5
+gamma: 1e-8
 
 
 # Logging 

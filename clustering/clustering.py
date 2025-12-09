@@ -34,8 +34,12 @@ def generate_data(user_tastes, movie_kinds, config):
         watched_movies = np.random.choice(len(movie_kinds), config.nb_ranked)
         for movie_id in watched_movies:
             if user_tastes[user_id] == movie_kinds[movie_id]:
-                ranking = config.mean_good_ranked + random.uniform(-1, 1)
+                ranking = config.mean_good_ranked + random.uniform(
+                    -config.variance_ranking, config.variance_ranking
+                    )
             else:
-                ranking = config.mean_bad_ranked + random.uniform(-1, 1)
+                ranking = config.mean_bad_ranked + random.uniform(
+                    -config.variance_ranking, config.variance_ranking
+                    )
             ranking_matrix[user_id, movie_id] = ranking
     return ranking_matrix
