@@ -8,6 +8,7 @@ import torch
 import numpy as np
 from torchinfo import summary
 
+from multi_graph_cnn.result_insights import compare_prediction
 from multi_graph_cnn.utils import get_logger, load_config
 from multi_graph_cnn.data import read_data, split_data, compute_the_laplacians
 from multi_graph_cnn.model import MGCNN
@@ -15,6 +16,7 @@ from multi_graph_cnn.training import train_loop
 from multi_graph_cnn.loss import rmse, DirichletReguLoss
 from multi_graph_cnn.utils import sparse_mx_to_torch
 from multi_graph_cnn.test import run_tests
+from multi_graph_cnn.graph_insights import compute_laplacian_factor_from_model
 
 from multi_graph_cnn.utils import get_tensorboard_writer
 
@@ -39,7 +41,9 @@ if __name__ == "__main__":
 
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
     dir_path = Path("saved_models/" + now)
+    results_dir_path = dir_path / "results"
     config.output_dir = str(dir_path)
+    config.result_dir = str(results_dir_path)
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     L_row = sparse_mx_to_torch(L_row).to(config.device)
@@ -93,4 +97,8 @@ if __name__ == "__main__":
 
     run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
 
+    compute_laplacian_factor_from_model(model, config)
+
+    compare_prediction(model, data, O_training,O_target,O_test,  config)
+    
     log.info("✅ Pipeline completed successfully")
