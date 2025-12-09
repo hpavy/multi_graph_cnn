@@ -70,3 +70,61 @@ def clustering_accuracy(y_true, y_pred):
     acc1 = (y_true == y_pred).mean()
 
     return max(acc1, 1-acc1)
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.metrics.pairwise import cosine_similarity
+
+def plot_embedding_diagnostics(embedding_matrix, labels, title, save_path=None):
+    """
+    Diagnostique la qualité du clustering des embeddings W ou H.
+    
+    Args:
+        embedding_matrix: La matrice W ou H (N_samples x Rank)
+        labels: Les vrais labels (0 ou 1)
+        title: Titre du plot (ex: "Diagnostics W (Users)")
+    """
+    # Convertir en numpy si c'est un tenseur PyTorch
+    if hasattr(embedding_matrix, 'detach'):
+        embedding_matrix = embedding_matrix.detach().cpu().numpy()
+        
+    
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    
+    # --- PLOT 1 : Matrice de Similarité (Cosinus) Triée ---
+    # On calcule la similarité entre tous les vecteurs
+    # Cela permet de voir si les vecteurs d'un même groupe sont proches
+    sim_matrix = cosine_similarity(embedding_matrix) - np.eye(embedding_matrix.shape[0])
+    
+    # On trie les indices pour regrouper les labels identiques
+    sort_idx = np.argsort(labels)
+    sorted_sim = sim_matrix[sort_idx][:, sort_idx]
+    
+    im = axes[0].imshow(sorted_sim, cmap='viridis', interpolation='nearest')
+    axes[0].set_title(f"{title} - Similarity Matrix (Sorted)")
+    axes[0].set_xlabel("Sorted Index")
+    axes[0].set_ylabel("Sorted Index")
+    plt.colorbar(im, ax=axes[0])
+    
+    # --- PLOT 2 : Projection PCA 2D ---
+    # On projette les 10 dimensions en 2D pour voir les nuages
+    pca = PCA(n_components=2)
+    embedding_2d = pca.fit_transform(embedding_matrix)
+    
+    scatter = axes[1].scatter(embedding_2d[:, 0], embedding_2d[:, 1], 
+                              c=labels, cmap='coolwarm', alpha=0.7, edgecolor='k')
+    axes[1].set_title(f"{title} - PCA Projection (2D)")
+    axes[1].set_xlabel("PC1")
+    axes[1].set_ylabel("PC2")
+    axes[1].legend(*scatter.legend_elements(), title="Cluster")
+
+    plt.suptitle(f"Analyse des Embeddings : {title}", fontsize=16)
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path)
+        print(f"Figure sauvegardée : {save_path}")
+    
+
