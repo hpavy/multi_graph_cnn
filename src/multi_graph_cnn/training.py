@@ -56,4 +56,4 @@ def train_loop(model, data, O_training, O_target, O_test, optimizer, loss, loss_
                 best_test_rmse = loss_test_rmse
                 save_path = os.path.join(config.output_dir, "best_model.pth")
                 torch.save(model.state_dict(), save_path)
-                log.info(f" New best model saved (RMSE: {best_test_rmse:.4f}) at step {i}")
+                 log.info(f" New best model saved (RMSE: {best_test_rmse:.4f}) at step {i}")
