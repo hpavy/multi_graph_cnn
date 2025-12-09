@@ -24,7 +24,7 @@ from utils import compute_the_laplacians, split_ranking
 
 if __name__ == "__main__":
 
-    config = load_config("find_impact_graph/impact_graph.yaml")
+    config = load_config("clustering/clustering_config.yaml")
     log = get_logger("main", config.log_level)
     log.debug(config)
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     L_col = compute_the_laplacians(graph_movies)
 
     now = datetime.now().strftime("%Y%m%d-%H%M%S")
-    dir_path = Path("clustering/saved_models/" + now)
+    dir_path = Path("clustering/saved_models/find_impact_graph/" + config.proba_within_users)
     config.output_dir = str(dir_path)
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
