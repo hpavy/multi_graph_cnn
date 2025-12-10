@@ -21,7 +21,7 @@ from multi_graph_cnn.test import run_tests
 from multi_graph_cnn.utils import get_tensorboard_writer
 
 from clustering import create_cluster, create_exact_neighbours_graph, generate_data, create_stochastic_graph,plot_graph_diagnostics
-from find_cluster import clustering_accuracy, find_cluster_from_graph, cluster_Spectral_embedding
+from find_cluster import clustering_accuracy, find_cluster_from_graph, cluster_Spectral_embedding, cluster_linear_embedding,plot_embedding_diagnostics
 from utils import compute_the_laplacians, split_ranking
 
 
@@ -61,18 +61,13 @@ if __name__ == "__main__":
     L_row = compute_the_laplacians(graph_users)
     L_col = compute_the_laplacians(graph_movies)
 
-    model_id = str(config.proba_within_users) + '_' + str(config.proba_within_movies)
-    dir_path = Path("clustering/saved_models/" + model_id)
+    model_id = str(config.proba_within_users) + '_' + str(config.proba_within_movies) + '_' + str(config.variance_ranking) + '_' +str(config.nb_ranked) +'_rankWH = '+ str(config.rank) +"_gamma="+str(config.gamma)
+    dir_path = Path("clustering/saved_models_0.5/" + model_id)
     config.output_dir = str(dir_path)
     config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     parser = argparse.ArgumentParser(description="Entraînement Recommender System (MGCNN vs sRGCNN)")
 
-    plot_graph_diagnostics(graph_movies,movie_kinds,str(dir_path)+"/figures_movies.png")
-    plot_graph_diagnostics(graph_movies,cluster_G_m,str(dir_path)+"/figures_movies_check.png")
-    plot_graph_diagnostics(graph_users,user_tastes,str(dir_path)+"/figures_users.png")
-    plot_graph_diagnostics(graph_users,cluster_G_u,str(dir_path)+"/figures_users_check.png")
-
-    model_type ="sRGCNN"
+    model_type = "sRGCNN"
 
     L_row = torch.tensor(L_row, dtype=torch.float32).to(config.device)
     L_col = torch.tensor(L_col, dtype=torch.float32).to(config.device)
@@ -117,6 +112,12 @@ if __name__ == "__main__":
 
         # Close the writer
         writer.close()
+    
+    plot_graph_diagnostics(graph_movies,movie_kinds,str(dir_path)+"/figures_movies.png")
+    plot_graph_diagnostics(graph_movies,cluster_G_m,str(dir_path)+"/figures_movies_check.png")
+    plot_graph_diagnostics(graph_users,user_tastes,str(dir_path)+"/figures_users.png")
+    plot_graph_diagnostics(graph_users,cluster_G_u,str(dir_path)+"/figures_users_check.png")
+
 
     # [OPTIONAL] Load the best model before running final tests
     best_model_path = f"{config.output_dir}/best_model.pth"
@@ -124,8 +125,10 @@ if __name__ == "__main__":
         checkpoint = torch.load(best_model_path)
         W = checkpoint['W']
         H = checkpoint['H']
-        cluster_W = cluster_Spectral_embedding(W)
-        cluster_H = cluster_Spectral_embedding(H)
+        plot_embedding_diagnostics(W, user_tastes, "Matrice W (Users)", str(dir_path)+"/diag_W.png")
+        plot_embedding_diagnostics(H, movie_kinds, "Matrice H (Movies)", str(dir_path)+"/diag_H.png")
+        cluster_W = cluster_linear_embedding(W)
+        cluster_H = cluster_linear_embedding(H)
         accuracy["accuracy_W"] = clustering_accuracy(cluster_W, user_tastes)
         accuracy["accuracy_H"] = clustering_accuracy(cluster_H, movie_kinds)
         with open(f"{config.output_dir}/accuracy.json", "w") as f:
