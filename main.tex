@@ -1,0 +1,191 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{GDAFinal_project}
+\author{Valentin Exbrayat}
+\date{December 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Abstract}
+Recommender systems are central to modern digital platforms, yet their underlying user–item rating matrices are highly sparse and structurally complex. While classical collaborative filtering and low-rank matrix completion methods struggle to capture the relational geometry of users and items, recent graph-regularized approaches exploit smoothness on similarity graphs but remain shallow and scale poorly. The emergence of geometric deep learning has introduced expressive tools such as spectral and Chebyshev graph convolutions, enabling localized, size-independent filtering on graph-structured data. Building on these developments, Geometric Matrix Completion with Recurrent Multi-Graph Neural Networks (Monti et al., 2017) proposed a novel architecture that combines graph CNNs to extract locally stationary features and recurrent networks to model nonlinear rating diffusion. Although influential, this framework relies on static and fully accurate user/item graphs, lacks multi-scale geometric reasoning, and offers limited interpretability of its learned diffusion dynamics. These limitations motivate a re-examination of geometric approaches to matrix completion and form the basis of the present work.
+
+\section{Context}
+Recommender systems have become indispensable to modern digital platforms, providing personalized suggestions in environments defined by overwhelming choice and information overload. From e-commerce and multimedia platforms to news feeds and social networks, these systems infer user preferences from massive, sparse, and often noisy interaction data. The key challenge lies in predicting missing user–item interactions despite sparsity, heterogeneity, and evolving user behavior. Classical paradigms such as collaborative filtering and content-based approaches (Breese et al., 1998; Pazzani & Billsus, 2007) remain foundational but do not fully leverage the rich relational structure that exists among users and items—structure that is crucial for improving generalization in sparse settings. These limitations have motivated the emergence of methods that explicitly integrate geometric and structural priors into the recommendation process, a direction that culminated in the Geometric Matrix Completion with Recurrent Multi-Graph Neural Networks framework introduced by Monti et al. (2017).
+
+Before geometric methods, the dominant line of research was low-rank matrix completion (Candès & Recht, 2012), which models user preferences as points within a shared low-dimensional latent space. Although effective, this approach assumes that interactions depend purely on latent factors and does not incorporate known similarities between users or between items. To address this gap, graph-regularized matrix completion introduced user and item similarity graphs and enforced smoothness priors—encouraging neighboring nodes in each graph to exhibit similar rating patterns (Ma et al., 2011; Kalofolias et al., 2014; Rao et al., 2015). These methods brought geometric information into the problem but remained tied to linear models whose capacity is limited and whose parameterization scales with the number of users and items.
+
+In parallel, the field of geometric deep learning opened the door to more expressive, nonlinear approaches capable of operating directly on irregular domains. Foundational developments in spectral graph theory demonstrated that convolution on graphs can be defined through the Fourier basis induced by the graph Laplacian (Bruna et al., 2013; Shuman et al., 2013). Building on this, Chebyshev polynomial filters (Defferrard et al., 2016) provided computationally efficient, localized, and scalable graph convolutions with parameter counts independent of graph size—an essential property for recommender systems with millions of users and items. These advances enabled models to process graph-structured data in a manner analogous to CNNs on regular grids, while remaining sensitive to the underlying geometry of user and item relationships.
+
+It is within this convergence of graph-based modeling and deep learning that Monti et al. (2017) introduced Geometric Matrix Completion with Recurrent Multi-Graph Neural Networks. Their central contribution lies in treating the user–item rating matrix as data living on two interacting graphs—one for users and one for items—and learning representations through localized graph convolutional filters. This geometric viewpoint allows the model to extract fine-grained, spatially smooth features reflecting how preferences vary along each graph. Coupled with a recurrent module designed to model rating propagation as a nonlinear diffusion process, the approach blends spatial geometric structure with temporal dynamics. The resulting architecture represents one of the earliest and most influential attempts to unify graph convolutional networks with recurrent neural models for matrix completion, offering a principled, parameter-efficient framework tailored to the relational nature of recommendation tasks.
+
+\section{Main content}
+
+Maybe we can redomntrate this 
+\section*{Proof of Equivalence Between Equations (11) and (12)}
+
+\paragraph{Setup and notation.}
+
+Let
+\[
+\Delta_r = \Phi_r \Lambda_r \Phi_r^\top,
+\qquad
+\Delta_c = \Phi_c \Lambda_c \Phi_c^\top
+\]
+be the eigendecompositions of the row- and column-graph Laplacians.  
+The scaled Laplacians are
+\[
+\widetilde{\Delta}_r = \Phi_r \widetilde{\Lambda}_r \Phi_r^\top,
+\qquad
+\widetilde{\Delta}_c = \Phi_c \widetilde{\Lambda}_c \Phi_c^\top,
+\]
+with diagonal eigenvalue matrices 
+\(\widetilde{\Lambda}_r = \mathrm{diag}(\widetilde{\lambda}_{r,i})\) and  
+\(\widetilde{\Lambda}_c = \mathrm{diag}(\widetilde{\lambda}_{c,j})\).
+
+The graph Fourier transform of a matrix \(X\in\mathbb{R}^{m\times n}\) is
+\[
+\widehat{X} = \Phi_r^\top X \Phi_c .
+\]
+
+A spectral filter is represented in the spectral domain by a matrix
+\(\widehat{Y}\), whose entries are
+\[
+\widehat{Y}_{i,j} = 
+\tau(\widetilde{\lambda}_{r,i}, \widetilde{\lambda}_{c,j}).
+\]
+EXPLAIN MORE IN DETAIL WHY DEPENDS ONLY OF GRAPH EIGENVALUES THE CONVOLUTION Y.
+
+The spectral convolution (Equation (11)) is
+\[
+X \star Y = \Phi_r \left( \widehat{X} \circ \widehat{Y} \right)\Phi_c^\top ,
+\]
+where \(\circ\) denotes the Hadamard product.
+
+Assume the spectral multiplier admits the Chebyshev expansion
+\[
+\tau(\widetilde{\lambda}_c, \widetilde{\lambda}_r)
+=\sum_{p,q=0}^{P} 
+\theta_{pq}\,
+T_p(\widetilde{\lambda}_r)\,T_q(\widetilde{\lambda}_c),
+\]
+and we aim to show that this is equivalent to the polynomial filtering
+\[
+\widetilde{X}
+=
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+T_p(\widetilde{\Delta}_r)\,X\,T_q(\widetilde{\Delta}_c),
+\]
+which is Equation (12).
+
+\subsection*{Proof}
+
+We begin by writing the spectral multiplier explicitly:
+\[
+\widehat{Y}_{i,j}
+=
+\tau(\widetilde{\lambda}_{r,i},\widetilde{\lambda}_{c,j})
+=
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+T_p(\widetilde{\lambda}_{r,i})\,T_q(\widetilde{\lambda}_{c,j}).
+\]
+
+Thus, the Hadamard product satisfies
+\[
+(\widehat{X}\circ \widehat{Y})_{i,j}
+=
+\widehat{X}_{i,j}\,\widehat{Y}_{i,j}
+=
+\widehat{X}_{i,j}
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+T_p(\widetilde{\lambda}_{r,i})\,T_q(\widetilde{\lambda}_{c,j}).
+\]
+
+Rearranging the sum yields
+\[
+(\widehat{X}\circ \widehat{Y})_{i,j}
+=
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+\big( T_p(\widetilde{\Lambda}_r)\,\widehat{X}\,T_q(\widetilde{\Lambda}_c) \big)_{i,j},
+\]
+because left-multiplication by \(T_p(\widetilde{\Lambda}_r)\) multiplies the
+\(i\)-th row of \(\widehat{X}\) by \(T_p(\widetilde{\lambda}_{r,i})\), and
+right-multiplication by \(T_q(\widetilde{\Lambda}_c)\) multiplies the
+\(j\)-th column by \(T_q(\widetilde{\lambda}_{c,j})\).  
+Hence,
+\[
+\widehat{X}\circ \widehat{Y}
+=
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+T_p(\widetilde{\Lambda}_r)\,\widehat{X}\,T_q(\widetilde{\Lambda}_c).
+\]
+
+Now transform back to the vertex domain:
+\[
+\begin{aligned}
+X\star Y
+&=
+\Phi_r (\widehat{X}\circ \widehat{Y}) \Phi_c^\top \\
+&=
+\Phi_r\left(
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+T_p(\widetilde{\Lambda}_r)\,\widehat{X}\,T_q(\widetilde{\Lambda}_c)
+\right)\Phi_c^\top .
+\end{aligned}
+\]
+
+Using \(\widehat{X}= \Phi_r^\top X \Phi_c\) and linearity,
+\[
+X\star Y
+=
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+\big(\Phi_r T_p(\widetilde{\Lambda}_r)\Phi_r^\top\big)\,
+X\,
+\big(\Phi_c T_q(\widetilde{\Lambda}_c)\Phi_c^\top\big).
+\]
+
+But for any polynomial \(T_p\), functional calculus gives
+\[
+T_p(\widetilde{\Delta}_r)
+=
+\Phi_r T_p(\widetilde{\Lambda}_r)\Phi_r^\top,
+\qquad
+T_q(\widetilde{\Delta}_c)
+=
+\Phi_c T_q(\widetilde{\Lambda}_c)\Phi_c^\top.
+\]
+
+Therefore,
+\[
+X\star Y
+=
+\sum_{p,q=0}^{P}
+\theta_{pq}\,
+T_p(\widetilde{\Delta}_r)\,X\,T_q(\widetilde{\Delta}_c),
+\]
+which is exactly Equation (12). \hfill\(\Box\)
+
+\paragraph{Remarks.}
+\begin{itemize}
+\item Diagonal multiplication in the spectral domain corresponds to
+polynomial filtering in the vertex domain:
+\[
+T_p(\widetilde{\Delta}) = \Phi\,T_p(\widetilde{\Lambda})\,\Phi^\top.
+\]
+\item The Hadamard product becomes left/right multiplication by spectral polynomials when the multiplier is expanded as
+\(\sum \theta_{pq} T_p(\lambda_r)T_q(\lambda_c)\).
+\item Truncating at degree \(P\) yields only \((P+1)^2\) parameters.
+\end{itemize}
+
+
+Despite its influential contribution, the Geometric Matrix Completion framework exhibits several limitations that motivate further investigation. One concern lies in its reliance on pre-constructed user and item graphs, which are treated as static and fully accurate throughout training. In real-world settings, user preferences evolve, item semantics shift, and similarity graphs are inevitably noisy or incomplete. Treating these graphs as fixed objects restricts the adaptability of the model and may lead to representations that fail to reflect the true underlying geometry of the data. Another limitation concerns the local nature of the graph filters employed: although the model emphasizes local stationarity, it offers no explicit mechanism for capturing multi-scale or global geometric patterns that may be critical in datasets with heterogeneous connectivity or long-range dependencies. Without theoretical guarantees or empirical analysis of what geometric features the filters actually encode, the scope of the learned representations remains uncertain. Finally, while the recurrent module is intended to model nonlinear rating diffusion, the underlying dynamics remain opaque. The model provides little interpretability, making it difficult to understand how ratings propagate across the graphs or whether the learned dynamics align with meaningful behavioral processes. Although interpretability lies outside the primary focus of the original work, this opacity underscores broader challenges in combining geometric and temporal reasoning in recommender systems.
+\end{document}

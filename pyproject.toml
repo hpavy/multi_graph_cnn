@@ -19,6 +19,9 @@ pyaml = "^25.7.0"
 matplotlib = "^3.10.7"
 torchinfo = "^1.8.0"
 tensorboard = "^2.20.0"
+pandas = "^2.3.3"
+seaborn = "^0.13.2"
+scikit-learn = "^1.7.2"
 
 
 [build-system]
