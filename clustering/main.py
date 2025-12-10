@@ -77,6 +77,9 @@ if __name__ == "__main__":
 
     W,H  = get_svd_initialization(ranking,config.rank, config.device)
 
+    W_init=W
+    H_init =H
+
     model = sRGCNN(L_row_rescaled, L_col_rescaled, config)
     model = model.to(config.device)
     summary(
@@ -125,6 +128,12 @@ if __name__ == "__main__":
         checkpoint = torch.load(best_model_path)
         W = checkpoint['W']
         H = checkpoint['H']
+        plot_embedding_diagnostics(W_init, user_tastes, "Matrice W (Users)", str(dir_path)+"/diag_W_init.png")
+        plot_embedding_diagnostics(H_init, movie_kinds, "Matrice H (Movies)", str(dir_path)+"/diag_H_init.png")
+        cluster_W_init = cluster_linear_embedding(W_init)
+        cluster_H_init = cluster_linear_embedding(H_init)
+        accuracy["accuracy_W_init"] = clustering_accuracy(cluster_W_init, user_tastes)
+        accuracy["accuracy_H_init"] = clustering_accuracy(cluster_H_init, movie_kinds)
         plot_embedding_diagnostics(W, user_tastes, "Matrice W (Users)", str(dir_path)+"/diag_W.png")
         plot_embedding_diagnostics(H, movie_kinds, "Matrice H (Movies)", str(dir_path)+"/diag_H.png")
         cluster_W = cluster_linear_embedding(W)

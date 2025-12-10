@@ -140,7 +140,7 @@ def train_loop_sRGCNN(model, W, H, data, O_training, O_target, O_test, optimizer
                 # We save model weights AND the learned factors W, H
                 torch.save({
                     'model_state_dict': model.state_dict(),
-                    'W': W,
-                    'H': H
+                    'W': W_new,
+                    'H': H_new
                 }, save_path)
                 log.info(f"🏆 New best model saved (RMSE: {best_test_rmse:.4f}) at step {i}")
