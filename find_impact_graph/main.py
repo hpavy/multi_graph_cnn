@@ -23,11 +23,12 @@ from create_clusters import load_arrays
 from training import train_loop
 from create_clusters import save_arrays
 
-for P_WITHIN in [0.7, 0.6, 0.5, 1., 0.9, 0.4]:
+for P_WITHIN in [0.3]:
     if __name__ == "__main__":
 
         config = load_config("find_impact_graph/impact_graph.yaml")
         config.proba_within_users = P_WITHIN
+        config.proba_within_movies = P_WITHIN
         log = get_logger("main", config.log_level)
         log.debug(config)
 
