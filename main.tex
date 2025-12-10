@@ -175,3 +175,22 @@ capturing global or multi-scale graph patterns. Finally, while the recurrent
 module introduces nonlinearity and temporal propagation, the learned dynamics 
 are not easily interpretable, leaving the relationship between filtered 
 signals and the underlying rating diffusion unclear.
+
+
+\section{Showing the learnt embedding}
+
+\subsection{The idea}
+
+From our previous sections, we have seen that the model is combining two graphs and a ranking matrix in order to do a prediction. From the part focusing on the influence of the graph, we know that the model is able to take only what is interesting for it in order to do the prediction. If the graph is good for that, it is going to use it. Otherwise it will learn to do without. \\
+
+From that, we can see the model as a tool in order to create a new embedding for the users. This embedding will be especially good for ranking prediction for the task we want to solve. \\
+
+Our goal in this part is to study this embedding. The best embedding should be the one at the end of the convolution. On top of that, the use of the matrices $W$ and $H$ from the factorized model (part 2.1 of the paper) give us directly a reduced embedding for the users or movies (if we take the example of users ranking movies). \\
+
+
+\subsection{The experiment}
+In order to show that the information inside the embedding is better than the one in the ranking or the graph alone, we are going to retake the synthetic dataset (and the example of movies and users for the understanding). The goal will be to create two clusters, then create a graph from those users clusters. 
+
+We are going to take a bad value for $p_{within}$ such that the clustering with the graph is not perfect. Then our goal is from the user embedding, to do a clustering and to try to refind the two clusters with a good accuracy. 
+
+
