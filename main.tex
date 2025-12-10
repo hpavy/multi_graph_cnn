@@ -22,170 +22,154 @@ In parallel, the field of geometric deep learning opened the door to more expres
 It is within this convergence of graph-based modeling and deep learning that Monti et al. (2017) introduced Geometric Matrix Completion with Recurrent Multi-Graph Neural Networks. Their central contribution lies in treating the user–item rating matrix as data living on two interacting graphs—one for users and one for items—and learning representations through localized graph convolutional filters. This geometric viewpoint allows the model to extract fine-grained, spatially smooth features reflecting how preferences vary along each graph. Coupled with a recurrent module designed to model rating propagation as a nonlinear diffusion process, the approach blends spatial geometric structure with temporal dynamics. The resulting architecture represents one of the earliest and most influential attempts to unify graph convolutional networks with recurrent neural models for matrix completion, offering a principled, parameter-efficient framework tailored to the relational nature of recommendation tasks.
 
 \section{Main content}
+\subsection{Theoretical Formulation}
 
-Maybe we can redomntrate this 
-\section*{Proof of Equivalence Between Equations (11) and (12)}
+In this section, we summarize the theoretical framework introduced in 
+\cite{monti2017geometric} for geometric matrix completion with multi-graph 
+neural networks. The goal is to reconstruct a partially observed matrix 
+$Y \in \mathbb{R}^{m \times n}$ from entries indexed by 
+$\Omega \subseteq [m] \times [n]$, while leveraging structural information 
+encoded in graphs over rows and columns.
 
-\paragraph{Setup and notation.}
+\subsubsection{Rank Minimization and Graph-Regularized Formulation}
 
-Let
+The original problem is formulated as a rank minimization:
+\begin{equation}
+    \min_{X} \ \operatorname{rank}(X) 
+    \quad \text{s.t. } x_{ij} = y_{ij}, \quad \forall (i,j) \in \Omega.
+\end{equation}
+Since rank minimization is NP-hard, the authors propose a convex surrogate 
+incorporating smoothness constraints with respect to row and column graphs:
+\begin{equation}
+    \min_{X} \ \|X\|_{G_r}^2 + \|X\|_{G_c}^2 + \frac{\mu}{2} 
+    \|\Omega \circ (X - Y)\|_F^2,
+\end{equation}
+where \(\|X\|_{G_r}^2 = \mathrm{tr}(X^\top \Delta_r X)\) and 
+\(\|X\|_{G_c}^2 = \mathrm{tr}(X \Delta_c X^\top)\), with \(\Delta_r\) 
+and \(\Delta_c\) being the Laplacians of the row and column graphs, 
+respectively. This formulation encourages the reconstructed matrix to be 
+smooth with respect to the underlying graphs.  
+
+To explicitly enforce low-rank structure, the matrix is factorized as 
+$X = WH^\top$, leading to
+\begin{equation}
+    \min_{W,H} \ \frac{1}{2}\|W\|_{G_r}^2 + \frac{1}{2}\|H\|_{G_c}^2 
+    + \frac{\mu}{2} \|\Omega \circ (WH^\top - Y)\|_F^2,
+\end{equation}
+where \(W \in \mathbb{R}^{m \times r}\) and \(H \in \mathbb{R}^{n \times r}\).  
+These regularization terms encourage the factors to vary smoothly along the 
+respective graphs.  
+
+\subsubsection{Spectral Graph Filtering}
+
+The authors describe filtering along the graphs using the spectral domain.  
+Let the Laplacians be decomposed as
 \[
-\Delta_r = \Phi_r \Lambda_r \Phi_r^\top,
-\qquad
-\Delta_c = \Phi_c \Lambda_c \Phi_c^\top
+\Delta_r = \Phi_r \Lambda_r \Phi_r^\top, \qquad 
+\Delta_c = \Phi_c \Lambda_c \Phi_c^\top.
 \]
-be the eigendecompositions of the row- and column-graph Laplacians.  
-The scaled Laplacians are
-\[
-\widetilde{\Delta}_r = \Phi_r \widetilde{\Lambda}_r \Phi_r^\top,
-\qquad
-\widetilde{\Delta}_c = \Phi_c \widetilde{\Lambda}_c \Phi_c^\top,
-\]
-with diagonal eigenvalue matrices 
-\(\widetilde{\Lambda}_r = \mathrm{diag}(\widetilde{\lambda}_{r,i})\) and  
-\(\widetilde{\Lambda}_c = \mathrm{diag}(\widetilde{\lambda}_{c,j})\).
-
-The graph Fourier transform of a matrix \(X\in\mathbb{R}^{m\times n}\) is
-\[
-\widehat{X} = \Phi_r^\top X \Phi_c .
-\]
-
-A spectral filter is represented in the spectral domain by a matrix
-\(\widehat{Y}\), whose entries are
-\[
-\widehat{Y}_{i,j} = 
-\tau(\widetilde{\lambda}_{r,i}, \widetilde{\lambda}_{c,j}).
-\]
-EXPLAIN MORE IN DETAIL WHY DEPENDS ONLY OF GRAPH EIGENVALUES THE CONVOLUTION Y.
-
-The spectral convolution (Equation (11)) is
-\[
-X \star Y = \Phi_r \left( \widehat{X} \circ \widehat{Y} \right)\Phi_c^\top ,
-\]
-where \(\circ\) denotes the Hadamard product.
-
-Assume the spectral multiplier admits the Chebyshev expansion
-\[
-\tau(\widetilde{\lambda}_c, \widetilde{\lambda}_r)
-=\sum_{p,q=0}^{P} 
-\theta_{pq}\,
-T_p(\widetilde{\lambda}_r)\,T_q(\widetilde{\lambda}_c),
-\]
-and we aim to show that this is equivalent to the polynomial filtering
-\[
-\widetilde{X}
-=
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-T_p(\widetilde{\Delta}_r)\,X\,T_q(\widetilde{\Delta}_c),
-\]
-which is Equation (12).
-
-\subsection*{Proof}
-
-We begin by writing the spectral multiplier explicitly:
-\[
-\widehat{Y}_{i,j}
-=
-\tau(\widetilde{\lambda}_{r,i},\widetilde{\lambda}_{c,j})
-=
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-T_p(\widetilde{\lambda}_{r,i})\,T_q(\widetilde{\lambda}_{c,j}).
-\]
-
-Thus, the Hadamard product satisfies
-\[
-(\widehat{X}\circ \widehat{Y})_{i,j}
-=
-\widehat{X}_{i,j}\,\widehat{Y}_{i,j}
-=
-\widehat{X}_{i,j}
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-T_p(\widetilde{\lambda}_{r,i})\,T_q(\widetilde{\lambda}_{c,j}).
-\]
-
-Rearranging the sum yields
-\[
-(\widehat{X}\circ \widehat{Y})_{i,j}
-=
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-\big( T_p(\widetilde{\Lambda}_r)\,\widehat{X}\,T_q(\widetilde{\Lambda}_c) \big)_{i,j},
-\]
-because left-multiplication by \(T_p(\widetilde{\Lambda}_r)\) multiplies the
-\(i\)-th row of \(\widehat{X}\) by \(T_p(\widetilde{\lambda}_{r,i})\), and
-right-multiplication by \(T_q(\widetilde{\Lambda}_c)\) multiplies the
-\(j\)-th column by \(T_q(\widetilde{\lambda}_{c,j})\).  
-Hence,
-\[
-\widehat{X}\circ \widehat{Y}
-=
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-T_p(\widetilde{\Lambda}_r)\,\widehat{X}\,T_q(\widetilde{\Lambda}_c).
-\]
-
-Now transform back to the vertex domain:
-\[
-\begin{aligned}
-X\star Y
-&=
-\Phi_r (\widehat{X}\circ \widehat{Y}) \Phi_c^\top \\
-&=
-\Phi_r\left(
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-T_p(\widetilde{\Lambda}_r)\,\widehat{X}\,T_q(\widetilde{\Lambda}_c)
-\right)\Phi_c^\top .
-\end{aligned}
-\]
-
-Using \(\widehat{X}= \Phi_r^\top X \Phi_c\) and linearity,
-\[
-X\star Y
-=
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-\big(\Phi_r T_p(\widetilde{\Lambda}_r)\Phi_r^\top\big)\,
-X\,
-\big(\Phi_c T_q(\widetilde{\Lambda}_c)\Phi_c^\top\big).
-\]
-
-But for any polynomial \(T_p\), functional calculus gives
-\[
-T_p(\widetilde{\Delta}_r)
-=
-\Phi_r T_p(\widetilde{\Lambda}_r)\Phi_r^\top,
-\qquad
-T_q(\widetilde{\Delta}_c)
-=
-\Phi_c T_q(\widetilde{\Lambda}_c)\Phi_c^\top.
-\]
-
-Therefore,
-\[
-X\star Y
-=
-\sum_{p,q=0}^{P}
-\theta_{pq}\,
-T_p(\widetilde{\Delta}_r)\,X\,T_q(\widetilde{\Delta}_c),
-\]
-which is exactly Equation (12). \hfill\(\Box\)
-
-\paragraph{Remarks.}
-\begin{itemize}
-\item Diagonal multiplication in the spectral domain corresponds to
-polynomial filtering in the vertex domain:
-\[
-T_p(\widetilde{\Delta}) = \Phi\,T_p(\widetilde{\Lambda})\,\Phi^\top.
-\]
-\item The Hadamard product becomes left/right multiplication by spectral polynomials when the multiplier is expanded as
-\(\sum \theta_{pq} T_p(\lambda_r)T_q(\lambda_c)\).
-\item Truncating at degree \(P\) yields only \((P+1)^2\) parameters.
-\end{itemize}
+The graph Fourier transform of \(X\) is \(\widehat{X} = \Phi_r^\top X \Phi_c\).  
+A spectral filter with multiplier \(\widehat{Y}\) acts element-wise on \(\widehat{X}\):
+\begin{equation}
+    X \star Y = \Phi_r (\widehat{X} \circ \widehat{Y}) \Phi_c^\top,
+\end{equation}
+where \(\circ\) denotes element-wise multiplication.  
+This formulation is explicitly presented in the paper and highlights how 
+the filtering operation combines information from row and column graph 
+spectra.
 
 
-Despite its influential contribution, the Geometric Matrix Completion framework exhibits several limitations that motivate further investigation. One concern lies in its reliance on pre-constructed user and item graphs, which are treated as static and fully accurate throughout training. In real-world settings, user preferences evolve, item semantics shift, and similarity graphs are inevitably noisy or incomplete. Treating these graphs as fixed objects restricts the adaptability of the model and may lead to representations that fail to reflect the true underlying geometry of the data. Another limitation concerns the local nature of the graph filters employed: although the model emphasizes local stationarity, it offers no explicit mechanism for capturing multi-scale or global geometric patterns that may be critical in datasets with heterogeneous connectivity or long-range dependencies. Without theoretical guarantees or empirical analysis of what geometric features the filters actually encode, the scope of the learned representations remains uncertain. Finally, while the recurrent module is intended to model nonlinear rating diffusion, the underlying dynamics remain opaque. The model provides little interpretability, making it difficult to understand how ratings propagate across the graphs or whether the learned dynamics align with meaningful behavioral processes. Although interpretability lies outside the primary focus of the original work, this opacity underscores broader challenges in combining geometric and temporal reasoning in recommender systems.
-\end{document}
+\subsubsection{Chebyshev Polynomial Expansion and Parameter Interpretation}
+
+While the paper does not derive the full equivalence, it explains that the 
+spectral multiplier \(\widehat{Y}\) can be approximated using a truncated 
+bivariate Chebyshev polynomial expansion:
+\begin{equation}
+\tau(\widetilde{\lambda}_r, \widetilde{\lambda}_c) 
+= \sum_{p,q=0}^{P} \theta_{pq} \, T_p(\widetilde{\lambda}_r) \, T_q(\widetilde{\lambda}_c),
+\end{equation}
+where \(T_p\) denotes the Chebyshev polynomial of degree \(p\), and 
+\(\Theta = (\theta_{pq})\) is the matrix of coefficients.  
+Importantly, the paper explicitly mentions that truncating the expansion 
+reduces the number of parameters from \(O(mn)\) (the full spectral multiplier) 
+to \((P+1)^2\), making the approach computationally tractable.
+
+This expansion expresses the spectral filter as a polynomial of the 
+eigenvalues of the row and column Laplacians, showing that the convolution 
+depends only on the spectra and not on the eigenvectors themselves.   
+Intuitively, each coefficient $\theta_{pq}$ controls the amplitude assigned to a 
+specific pair of graph frequencies: the $p$-th frequency of the row graph and the 
+$q$-th frequency of the column graph. This follows from the fact that the graph 
+Fourier transform diagonalizes the Laplacian, so that the eigenvectors 
+$\Phi_r$ and $\Phi_c$ define the orthogonal basis in which any matrix $X$ can be 
+decomposed into its elementary oscillatory components. In this spectral domain, 
+the eigenvalues $\widetilde{\lambda}_{r,i}$ and $\widetilde{\lambda}_{c,j}$ 
+represent the corresponding frequencies: small eigenvalues encode smooth 
+variations along the graph, whereas large eigenvalues encode rapid variations.  
+
+Because convolution is defined as a multiplication in the spectral domain, its 
+effect is entirely determined by how much we amplify or attenuate each spectral 
+component. The crucial observation is that this amplification must depend only 
+on the frequencies of the signal, not its orientation in the original 
+vertex domain; hence the convolution operator seems fully described by the scalar 
+function $\tau(\widetilde{\lambda}_{r,i},\widetilde{\lambda}_{c,j})$, evaluated 
+at pairs of eigenvalues. In other words, once the Laplacian eigenvectors define 
+the notion of frequency on the graph, the eigenvalues alone determine how each 
+frequency component is filtered.  
+
+The Chebyshev expansion 
+\[
+\tau(\widetilde{\lambda}_r,\widetilde{\lambda}_c)
+= \sum_{p,q=0}^P \theta_{pq}\,
+T_p(\widetilde{\lambda}_r)\, T_q(\widetilde{\lambda}_c)
+\]
+therefore encodes how the filter behaves across all frequency pairs 
+$(\widetilde{\lambda}_r,\widetilde{\lambda}_c)$. Each term 
+$T_p(\widetilde{\lambda}_r) T_q(\widetilde{\lambda}_c)$ prescribes a specific 
+pattern of response over the joint frequency plane of the two graphs, and the 
+learned parameters $\theta_{pq}$ modulate the contribution of these patterns. 
+Since Chebyshev polynomials form an approximation basis over $[-1,1]$, this 
+representation allows the model to approximate any smooth spectral filter using 
+only $(P+1)^2$ parameters.  
+
+From this perspective, using eigenvalues for convolution naturally captures the 
+dominant tendencies of variation on the graphs: low-frequency components (small 
+eigenvalues) correspond to broad, smooth structures shared by many vertices, 
+whereas high-frequency components correspond to localized or noisy fluctuations. 
+The spectral filter can thus selectively enhance global trends or suppress noise 
+simply by assigning appropriate weights to different ranges of eigenvalues, 
+making the convolution both expressive and interpretable.
+
+Using standard functional calculus, one can see that this spectral 
+multiplication is equivalent to polynomial filtering in the vertex domain:
+\begin{equation}
+    \widetilde{X} = \sum_{p,q=0}^{P} \theta_{pq} \, 
+    T_p(\widetilde{\Delta}_r) \, X \, T_q(\widetilde{\Delta}_c),
+\end{equation}
+which corresponds to Equation (12).  
+This equivalence shows that the filtering operation can be performed efficiently 
+without explicit eigenvector computations, while preserving the dependency 
+on the graph spectra via the Chebyshev polynomials.
+
+
+\subsubsection{Recurrent Neural Network Component}
+
+The framework further introduces a recurrent neural network that operates 
+on these filtered signals. At each step, the RNN updates the state by combining 
+the current filtered matrix with previous states, enabling propagation of 
+information across multiple graph supports and modeling nonlinear interactions.
+
+\subsection{Implementations}
+
+
+\subsection{Transition}
+
+Beyond the original presentation, several limitations can be noted.  
+First, the method relies on pre-constructed row and column graphs, which 
+are assumed static and accurate, potentially limiting adaptability to 
+dynamic or noisy data. Second, the graph filters are local, focusing on 
+stationarity at small neighborhoods, without an explicit mechanism for 
+capturing global or multi-scale graph patterns. Finally, while the recurrent 
+module introduces nonlinearity and temporal propagation, the learned dynamics 
+are not easily interpretable, leaving the relationship between filtered 
+signals and the underlying rating diffusion unclear.
