@@ -1,0 +1,23 @@
+# Dataset
+dataset_name: movielens
+
+# Hyperparameters
+batch_size : 1
+rank : 10
+n_epoch : 10000
+rate_training: 0.5
+nb_iterations_rnn : 10
+out_channels : 32
+learning_rate : 1e-3
+p_order : 5
+gamma : 1e-10
+
+# The config file
+
+# Logging 
+log_each : 10
+log_level : INFO # DEBUG, INFO, WARNING, ERRO
+tensorboard_dir : "runs"
+
+# Reproductibility
+seed : 42

@@ -52,3 +52,48 @@ def rmse(learnt, target):
     mse = torch.sum(diff ** 2) / torch.sum(mask) # Divide by count of ratings, not matrix size
     
     return torch.sqrt(mse)
+
+def compute_factorized_rmse(W, H, target_mask, target_data, loss_rmse):
+    """Helper to compute RMSE for factorized model"""
+    # Reconstruct full matrix
+    prediction = W @ H.t()
+    
+    val = loss_rmse(prediction, target_data * target_mask)
+    return val
+
+class DirichletReguLossSRGCNN(nn.Module):
+    def __init__(self, L_row, L_col, config):
+        super().__init__()
+        self.L_row = L_row
+        self.L_col = L_col
+        self.gamma = float(config.gamma)
+
+    def forward(self, W,H, Y, split_components=True):
+        """
+        X : matrix learnt
+        Y : known entries, values of zero are considered to be unknown
+        """  
+        # A. Geometric Smoothness (Dirichlet Energy on Factors)
+        # trace(W^T * L_row * W)
+        dirichlet_W = torch.trace(W.t() @ self.L_row @ W)
+        # trace(H^T * L_col * H)
+        dirichlet_H = torch.trace(H.t() @ self.L_col @ H)
+        
+        loss_geom = (dirichlet_W + dirichlet_H)
+
+        # B. Reconstruction Loss (Frobenius Norm on masked entries)
+        # X_rec = W * H^T
+        X_rec = W @ H.t()
+        
+        # We normalize X_rec for stability in loss calculation (matching original loss.py logic)
+        X_rec_norm = normalize_x(X_rec)
+        
+        # Target data is O_training + O_target (known entries)
+        mask = Y > 0
+        diff = mask * (X_rec_norm - Y)
+        loss_reg = torch.norm(diff) ** 2 / torch.sum(mask)
+
+        if split_components:
+            return dirichlet_W, dirichlet_H, loss_reg
+        else:
+            return (self.gamma) / 2 * loss_geom + loss_reg

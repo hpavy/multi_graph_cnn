@@ -7,28 +7,29 @@ nb_neighbour_users: 8
 nb_neighbour_movies: 13
 
 # The graph
-proba_within_users: 0.8
-proba_within_movies: 0.8
+proba_within_users: 0.5
+proba_within_movies: 0.9
+
 
 # The data
-nb_ranked: 15
+nb_ranked: 10
 mean_good_ranked: 4
 mean_bad_ranked: 2
 variance_ranking: 0.5
 
+
 # Hyperparameters
-rate_test: 0.1
-rate_training: 0.5
-
 batch_size : 1
-n_epoch : 25000
+rank : 10
+n_epoch : 10000
+rate_test : 0.5
+rate_training: 0.5
 nb_iterations_rnn : 10
-out_channels: 32
-learning_rate: 1e-3
-p_order_row: 5
-p_order_col: 5
-gamma: 1e-8
-
+out_channels : 32
+learning_rate : 1e-3
+p_order : 5
+gamma : 1e-10
+# The config file
 
 # Logging 
 log_each : 10

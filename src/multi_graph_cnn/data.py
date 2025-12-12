@@ -54,6 +54,20 @@ def read_data(name_data):
             "W_row": W_row,  # 150x150
             "W_col": W_col  # 200x200
         }
+    elif name_data == 'movielens':
+        M = np.asarray(data['M']).astype(np.float32).T
+        O_training = np.asarray(data['Otraining']).astype(np.float32).T
+        O_test = np.asarray(data['Otest']).astype(np.float32).T
+        W_row = find_sparse_matrix(data["W_users"])
+        W_col = find_sparse_matrix(data["W_movies"])
+        data = {
+            "M": M,  # 150x200,
+            "O_training": O_training,  # 150x200
+            "O_test": O_test,  # 150x200
+            "W_row": W_row,  # 150x150
+            "W_col": W_col  # 200x200
+        }
+
     return data
 
 
