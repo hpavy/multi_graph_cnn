@@ -20,8 +20,8 @@ from multi_graph_cnn.test import run_tests
 
 from multi_graph_cnn.utils import get_tensorboard_writer
 
-from clustering import create_cluster, create_exact_neighbours_graph, generate_data, create_stochastic_graph,plot_graph_diagnostics
-from find_cluster import clustering_accuracy, find_cluster_from_graph, cluster_Spectral_embedding, cluster_linear_embedding,plot_embedding_diagnostics
+from clustering import create_cluster, create_exact_neighbours_graph, generate_data, create_stochastic_graph
+from find_cluster import clustering_accuracy, find_cluster_from_graph, cluster_Spectral_embedding, cluster_linear_embedding,plot_embedding_diagnostics, plot_graph_diagnostics
 from utils import compute_the_laplacians, split_ranking
 
 
@@ -40,10 +40,10 @@ if __name__ == "__main__":
 
     # creating the clusters and the graphs
     user_tastes, movie_kinds = create_cluster(config)
-    graph_users = create_stochastic_graph(
+    graph_users = create_exact_neighbours_graph(
         user_tastes, config.proba_within_users, config.nb_neighbour_users
         )
-    graph_movies = create_stochastic_graph(
+    graph_movies = create_exact_neighbours_graph(
         movie_kinds, config.proba_within_movies, config.nb_neighbour_movies
         )
 
@@ -130,14 +130,14 @@ if __name__ == "__main__":
         H = checkpoint['H']
         plot_embedding_diagnostics(W_init, user_tastes, "Matrice W (Users)", str(dir_path)+"/diag_W_init.png")
         plot_embedding_diagnostics(H_init, movie_kinds, "Matrice H (Movies)", str(dir_path)+"/diag_H_init.png")
-        cluster_W_init = cluster_linear_embedding(W_init)
-        cluster_H_init = cluster_linear_embedding(H_init)
+        cluster_W_init = find_cluster_from_graph(W_init)
+        cluster_H_init = find_cluster_from_graph(H_init)
         accuracy["accuracy_W_init"] = clustering_accuracy(cluster_W_init, user_tastes)
         accuracy["accuracy_H_init"] = clustering_accuracy(cluster_H_init, movie_kinds)
         plot_embedding_diagnostics(W, user_tastes, "Matrice W (Users)", str(dir_path)+"/diag_W.png")
         plot_embedding_diagnostics(H, movie_kinds, "Matrice H (Movies)", str(dir_path)+"/diag_H.png")
-        cluster_W = cluster_linear_embedding(W)
-        cluster_H = cluster_linear_embedding(H)
+        cluster_W = find_cluster_from_graph(W)
+        cluster_H = find_cluster_from_graph(H)
         accuracy["accuracy_W"] = clustering_accuracy(cluster_W, user_tastes)
         accuracy["accuracy_H"] = clustering_accuracy(cluster_H, movie_kinds)
         with open(f"{config.output_dir}/accuracy.json", "w") as f:

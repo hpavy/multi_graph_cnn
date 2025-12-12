@@ -3,14 +3,12 @@ import numpy as np
 import random
 
 
+
 def create_cluster(config):
     """Create two clusters"""
     user_tastes = np.random.choice([0, 1], size=config.nb_users)
     movie_kinds = np.random.choice([0, 1], size=config.nb_movies)
     return user_tastes, movie_kinds
-
-
-import numpy as np
 
 def create_exact_neighbours_graph(cluster, p_within=0.7, nb_neighbours=10, max_attempts=1000):
     """
@@ -80,75 +78,3 @@ def create_stochastic_graph(cluster, p_within, nb_neigbours):
         neigbours = neigbours[neigbours != i]  # In case we take the node
         adjacency[i][neigbours] = 1.
     return adjacency + adjacency.T  # Maybe we can find a better way to do that ()
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-import networkx as nx
-import scipy.linalg as la
-
-def plot_graph_diagnostics(adj_matrix, labels,save_directory):
-    """
-    Plots diagnostics to check if a graph structure matches the labels.
-    
-    Args:
-        adj_matrix: The adjacency matrix (graph_movies)
-        labels: The ground truth cluster labels (movie_kinds)
-    """
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    # --- Plot 1: Sorted Adjacency Matrix ---
-    # Sort the matrix indices based on the labels
-    sort_idx = np.argsort(labels)
-    sorted_adj = adj_matrix[sort_idx][:, sort_idx]
-    
-    axes[0].imshow(sorted_adj, cmap='Greys', interpolation='nearest', aspect='auto')
-    axes[0].set_title("Adjacency Matrix (Sorted by Label)")
-    axes[0].set_xlabel("Nodes")
-    axes[0].set_ylabel("Nodes")
-
-    # --- Plot 2: Sorted Fiedler Vector ---
-    # Compute Normalized Laplacian
-    degrees = np.sum(adj_matrix, axis=1)
-    # Avoid div by zero
-    degrees[degrees == 0] = 1 
-    d_inv_sqrt = np.diag(1.0 / np.sqrt(degrees))
-    L_norm = np.eye(len(degrees)) - d_inv_sqrt @ adj_matrix @ d_inv_sqrt
-    
-    # Get 2nd smallest eigenvector
-    evals, evecs = la.eigh(L_norm, subset_by_index=[1, 1])
-    fiedler_vec = evecs.flatten()
-    
-    # Sort the vector values
-    axes[1].plot(np.sort(fiedler_vec), marker='o', markersize=2, linestyle='-')
-    axes[1].set_title("Sorted Fiedler Vector")
-    axes[1].set_xlabel("Node Index")
-    axes[1].set_ylabel("Eigenvector Value")
-    axes[1].grid(True, alpha=0.3)
-
-    # --- Plot 3: Network Visualization ---
-    # Create NetworkX graph
-    G = nx.from_numpy_array(adj_matrix)
-    
-    # Use spring layout (force-directed)
-    # We only compute positions once
-    pos = nx.spring_layout(G, iterations=50, seed=42)
-    
-    # Draw nodes colored by label
-    nx.draw_networkx_nodes(G, pos, ax=axes[2], node_size=30, 
-                           node_color=labels, cmap='coolwarm', alpha=0.8)
-    # Optional: Draw edges (can be messy if dense)
-    # nx.draw_networkx_edges(G, pos, ax=axes[2], alpha=0.05)
-    
-    axes[2].set_title("Force-Directed Layout")
-    axes[2].axis('off')
-
-    plt.tight_layout()
-    plt.savefig(save_directory)
-
-
-
-
-
-# --- USAGE ---
-# Assuming you have these variables from your main.py:
-# plot_graph_diagnostics(graph_movies, movie_kinds)

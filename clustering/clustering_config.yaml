@@ -10,6 +10,7 @@ nb_neighbour_movies: 13
 proba_within_users: 0.5
 proba_within_movies: 0.9
 
+
 # The data
 nb_ranked: 10
 mean_good_ranked: 4
