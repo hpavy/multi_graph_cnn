@@ -79,8 +79,6 @@ def train_loop_sRGCNN(model, W, H, data, O_training, O_target, O_test, optimizer
     model.eval()
     
     # --- Step 0 Evaluation ---
-    # We pass the INITIAL factors through the model (optional, or just use W/H directly)
-    # Usually we want to evaluate the factors as they stand
     with torch.no_grad():
         W_pred, H_pred = model(W, H)
         loss_target_rmse = compute_factorized_rmse(W_pred, H_pred, O_training + O_target, data, loss_rmse)

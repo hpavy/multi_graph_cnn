@@ -127,11 +127,6 @@ if __name__ == "__main__":
         except Exception as e:
             log.warning("Could not load best model (maybe none was saved?), using last state.")
 
-        run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
-
-        compute_laplacian_factor_from_model(model, config)
-
-        compare_prediction(model, data, O_training,O_target,O_test,  config)
         
         log.info("✅ Pipeline completed successfully")
         
@@ -219,10 +214,10 @@ if __name__ == "__main__":
         except Exception as e:
             log.warning("Could not load best model (maybe none was saved?), using last state.")
 
-    run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
+        run_tests(model, data, O_training, O_target, O_test, loss, loss_rmse, config)
 
-    compute_laplacian_factor_from_model(model, config)
+        compute_laplacian_factor_from_model(model, config)
 
-    compare_prediction(model, data, O_training,O_target,O_test,  config)
+        compare_prediction(model, data, O_training,O_target,O_test,  config)
     
-    log.info("✅ Pipeline completed successfully")
+        log.info("✅ Pipeline completed successfully")
