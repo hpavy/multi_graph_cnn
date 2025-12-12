@@ -29,8 +29,8 @@ from create_clusters import save_arrays
 
 CHANGE_BOTH_GRAPHS = True
 
-for P_WITHIN in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]:
-    if __name__ == "__main__":
+if __name__ == "__main__":
+    for P_WITHIN in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]:
 
         config = load_config("find_impact_graph/impact_graph.yaml")
         config.proba_within_users = P_WITHIN
