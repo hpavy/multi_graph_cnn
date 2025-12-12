@@ -25,18 +25,18 @@ from multi_graph_cnn.utils import get_tensorboard_writer
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Entraînement Recommender System (MGCNN vs sRGCNN)")
+    parser = argparse.ArgumentParser(description="Trainingr Recommender System (MGCNN vs sRGCNN)")
     
     parser.add_argument(
         "--model", "-m", 
         type=str, 
         choices=["MGCNN", "sRGCNN"], 
         default=None,
-        help="Le type de modèle à utiliser : 'MGCNN' (original) ou 'sRGCNN' (factorisé)."
+        help="Model type to use: 'MGCNN' ou 'sRGCNN' (factorized)."
     )
     
-    parser.add_argument("--epochs", type=int, default=None, help="Changer le nombre d'époques")
-    parser.add_argument("--lr", type=float, default=None, help="Changer le learning rate")
+    parser.add_argument("--epochs", type=int, default=None, help="Change epochs number")
+    parser.add_argument("--lr", type=float, default=None, help="Change learning rate")
 
     args = parser.parse_args()
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         model_type ="sRGCNN"
         config = load_config("config_sRGCNN.yaml")
         log = get_logger("main", config.log_level)
-        log.info(f" Lancement du pipeline avec le modèle : {model_type}")
+        log.info(f" Launch pipeline for model : {model_type}")
         log.debug(config)
     
         if args.epochs:
@@ -54,8 +54,6 @@ if __name__ == "__main__":
             
         if args.lr:
             config.learning_rate = args.lr
-
-    
 
         seed = config.seed 
         random.seed(seed)
@@ -135,7 +133,7 @@ if __name__ == "__main__":
         model_type ="MGCNN"
         config = load_config("config_MGCNN.yaml")
         log = get_logger("main", config.log_level)
-        log.info(f" Lancement du pipeline avec le modèle : {model_type}")
+        log.info(f"Launch pipeline for model : {model_type}")
         log.debug(config)
     
         if args.epochs:
