@@ -61,8 +61,6 @@ for P_WITHIN in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]:
         L_row = compute_the_laplacians(graph_users)
         L_col = compute_the_laplacians(graph_movies)
 
-        # now = datetime.now().strftime("%Y%m%d-%H%M%S")
-        # dir_path = Path("clustering/saved_models/find_impact_graph/" + config.proba_within_users)
         config.output_dir = f"find_impact_graph/results/proba_{P_WITHIN}"
         config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
