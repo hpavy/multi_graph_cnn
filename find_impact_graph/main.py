@@ -1,4 +1,8 @@
-"""The main code to train a model"""
+"""
+The main code to try the graph.
+Take different values of p_within and do a training with them.
+Thanks to this code we can assess the impact of the graph on the training
+"""
 
 from datetime import datetime
 from pathlib import Path
@@ -23,7 +27,7 @@ from create_clusters import load_arrays
 from training import train_loop
 from create_clusters import save_arrays
 
-for P_WITHIN in [0.3]:
+for P_WITHIN in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]:
     if __name__ == "__main__":
 
         config = load_config("find_impact_graph/impact_graph.yaml")
