@@ -3,6 +3,26 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns 
 
+def plot_k_hop_influence(coefs, title, ax=None, show=True):
+    """Plot the influence of  i-j distant neighbour for a given filter
+    Args:
+        coefs (np.ndarray): Found percentage of influence
+        title (str): Title of the plot.
+        ax (matplotlib.axes.Axes, optional): Axes to plot on. Defaults to None.
+        show (bool, optional): Whether to show the plot. Defaults to True.
+    """
+    if ax is None:
+        _, ax = plt.subplots(1, 1, figsize=(8, 8))
+    
+    ax = sns.heatmap(coefs, annot=True, fmt=".1%", ax=ax)
+    ax.xaxis.tick_top()
+    ax.set_ylabel("i-hops on users graph")
+    ax.set_xlabel("j-hops on items graph")
+    ax.set_title(f"Influence of i-j distant neighbour for a given filter ({title})")
+
+    if show: plt.show()
+
+
 def plot_coef_influence(coefs, title, ax=None, show=True):
     """Plot the influence of convolution coefficients on the graph convolution.
     Args:
@@ -14,11 +34,11 @@ def plot_coef_influence(coefs, title, ax=None, show=True):
     if ax is None:
         _, ax = plt.subplots(1, 1, figsize=(8, 8))
     
-    ax = sns.heatmap(coefs, annot=True, fmt=".1e", ax=ax)
+    ax = sns.heatmap(coefs, annot=True, fmt=".1e", annot_kws={"fontsize": 12}, ax=ax)
     ax.xaxis.tick_top()
     ax.set_ylabel("i-hops on users graph")
     ax.set_xlabel("j-hops on items graph")
-    ax.set_title(f"Influence of convolution coefficients filter ({title})")
+    ax.set_title(f"Convolution coeffs Influence - {title}")
 
     if show: plt.show()
 

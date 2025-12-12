@@ -27,7 +27,7 @@ def compare_prediction(model, data, O_training, O_target, O_test, config):
     # difference 
     diff:np.ndarray = data - predict
     mean_abs_value = abs(diff).mean()
-    plot_matrix_completion(diff, "Diff (Mean absolute error={mean_abs_value:.2f})", show=False)
+    plot_matrix_completion(diff, f"Diff (Mean absolute error={mean_abs_value:.2f})", show=False)
     plt.savefig(path_results / "heatmap_diff_real_value.png")
     plt.close()
 

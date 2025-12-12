@@ -2,6 +2,7 @@
 dataset_name: synthetic_netflix
 
 # Hyperparameters
+enable_eigenvalue_scaling_laplacian: False
 batch_size : 1
 n_epoch : 25000
 rate_training: 0.5

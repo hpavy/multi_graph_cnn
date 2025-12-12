@@ -2,10 +2,12 @@ from pathlib import Path
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.special import comb
+import numpy as np
+from scipy.sparse.csgraph import shortest_path
 
 from multi_graph_cnn.model import MGCNN
 from multi_graph_cnn.utils import get_logger
-from multi_graph_cnn.visualization import plot_coef_influence
+from multi_graph_cnn.visualization import plot_coef_influence, plot_k_hop_influence
 
 log = get_logger()
 
@@ -151,8 +153,8 @@ def compute_laplacian_factor_from_model(model:MGCNN, config):
 
     result_coefs_arr = np.array(result_coefs)
     absolute_value_influence = abs(result_coefs_arr).mean(axis=0)
-    log.info("Mean influence of convolution (i,j) = i-hops neighbourhood row (user) influence with j-hops (items) influence")
-    log.info(absolute_value_influence)
+    log.debug("Mean influence of convolution (i,j) = i-hops neighbourhood row (user) influence with j-hops (items) influence")
+    log.debug(absolute_value_influence)
 
     log.info("Processing plots of coefficient influence...")
     path_results = Path(config.result_dir)
@@ -167,3 +169,88 @@ def compute_laplacian_factor_from_model(model:MGCNN, config):
 
     return result_coefs
 
+
+
+def compute_exact_2d_influence(theta_2d, R_basis, C_basis, W_row, W_col, config):
+    """
+    Computes the EXACT spatial influence heatmap for the 2D MGCNN.
+    
+    Args:
+        theta_2d (np.ndarray): The learned coefficients matrix (shape p_row x p_col).
+        L_row, L_col (sparse matrix): The Laplacians for row (item) and col (user) graphs.
+        max_dist_row, max_dist_col (int): The max distances to analyze.
+        
+    Returns:
+        np.ndarray: A 2D heatmap (shape max_dist_row+1 x max_dist_col+1)
+                    where entry [k, l] is the mean absolute influence of
+                    interaction between k-hop items and l-hop users.
+    """
+
+    # 2. Compute Geodesic Shells (Distance Matrices)
+    dist_r = shortest_path(W_row, directed=False, unweighted=True)
+    dist_c = shortest_path(W_col, directed=False, unweighted=True)
+    
+    # 3. Compute Influence Heatmap
+    heatmap = np.zeros((config.p_order_row + 1, config.p_order_col + 1))
+    
+    # We loop over the target "Distance Grid"
+    for k in range(config.p_order_row + 1):
+        for l in range(config.p_order_col + 1):
+            
+            # --- Extract Features for Row Shell k ---
+            # Find all item pairs (v, v') at distance k
+            mask_r = (dist_r == k)
+            if np.sum(mask_r) == 0: continue
+            
+            # Extract the polynomial values for these pairs
+            # V_r shape: (Num_Pairs_k, p_row)
+            # R_basis[:, mask_r] gives (p_row, Num_Pairs_k) -> Transpose
+            V_r = R_basis[:, mask_r].T 
+            
+            # --- Extract Features for Col Shell l ---
+            # Find all user pairs (u, u') at distance l
+            mask_c = (dist_c == l)
+            if np.sum(mask_c) == 0: continue
+            
+            # V_c shape: (Num_Pairs_l, p_col)
+            V_c = C_basis[:, mask_c].T
+            
+            # --- Compute Interaction Energy ---
+            # The filter weight for a specific user-pair (u,u') and item-pair (v,v')
+            # is given by the bilinear form: val = V_r[v,v'] @ Theta @ V_c[u,u'].T
+            #
+            # We want Mean(Abs(val)). 
+            # Since V_r and V_c can be large, we compute the matrix product Z
+            # Z shape: (Num_Pairs_k, Num_Pairs_l)
+            
+            # Optimization: If too large, sample pairs. 
+            # Here we assume analysis on manageable subgraphs.
+            
+            Intermediate = V_r @ theta_2d # Shape (Pairs_k, p_col)
+            Z = Intermediate @ V_c.T      # Shape (Pairs_k, Pairs_l)
+            
+            mean_energy = np.mean(np.abs(Z))
+            heatmap[k, l] = mean_energy
+            
+    return heatmap
+
+def compute_energy_k_distant_from_model(model, dataset, config):
+    path_results = Path(config.result_dir)
+    path_results.mkdir(exist_ok=True)
+    polynom_tcheby_row = model.conv.Tr.detach().numpy()
+    polynom_tcheby_col = model.conv.Tc.detach().numpy()
+    heatmaps = []
+    log.info("Processing energy of k-distant neigbour ...")
+    for q in range(config.out_channels):
+        coefs = model.conv.theta[:,:,q].detach().numpy()
+        heatmap = compute_exact_2d_influence(coefs, polynom_tcheby_row, polynom_tcheby_col, dataset["W_row"], dataset["W_col"], config)
+        heatmap_percent = heatmap / heatmap.sum()
+        heatmaps.append(heatmap_percent)
+        plot_k_hop_influence(heatmap_percent, f"Filter {q}", show=False)
+        plt.savefig(path_results / f"heatmap_energy_filter_{q}.png")
+        plt.close()
+
+    mean = np.array(heatmaps).mean(axis=0)
+    plot_k_hop_influence(mean, f"Mean across all", show=False)
+    plt.savefig(path_results / f"heatmap_energy_mean.png")
+    plt.close()

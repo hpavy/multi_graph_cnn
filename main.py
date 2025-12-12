@@ -17,7 +17,7 @@ from multi_graph_cnn.training import train_loop, train_loop_sRGCNN
 from multi_graph_cnn.loss import rmse, DirichletReguLoss, DirichletReguLossSRGCNN
 from multi_graph_cnn.utils import sparse_mx_to_torch,get_svd_initialization
 from multi_graph_cnn.test import run_tests
-from multi_graph_cnn.graph_insights import compute_laplacian_factor_from_model
+from multi_graph_cnn.graph_insights import compute_energy_k_distant_from_model, compute_laplacian_factor_from_model
 
 from multi_graph_cnn.utils import get_tensorboard_writer
 
@@ -63,9 +63,9 @@ if __name__ == "__main__":
         if torch.cuda.is_available():
             torch.cuda.manual_seed(seed)
 
-        data = read_data(config.dataset_name)
-        O_training, O_target, O_test = split_data(data, config)
-        L_row, L_col = compute_the_laplacians(data)
+        dataset = read_data(config.dataset_name)
+        O_training, O_target, O_test = split_data(dataset, config)
+        L_row, L_col = compute_the_laplacians(dataset)
 
         now = datetime.now().strftime("%Y%m%d-%H%M%S")
         dir_path = Path("saved_models/" + model_type +"/"+now)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         L_row_rescaled = L_row - torch.eye(L_row.shape[0], device=config.device)
         L_col_rescaled = L_col - torch.eye(L_col.shape[0], device=config.device)
 
-        W,H  = get_svd_initialization(data['M'],config.rank, config.device)
+        W,H  = get_svd_initialization(dataset['M'],config.rank, config.device)
 
         model = sRGCNN(L_row_rescaled, L_col_rescaled, config)
         model = model.to(config.device)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         loss = DirichletReguLossSRGCNN(L_row, L_col, config)
         loss_rmse = rmse
 
-        data = torch.tensor(data["M"]).to(config.device)
+        data = torch.tensor(dataset["M"]).to(config.device)
         O_training = torch.tensor(O_training).to(config.device)
         O_test = torch.tensor(O_test).to(config.device)
         O_target = torch.tensor(O_target).to(config.device)
@@ -150,9 +150,9 @@ if __name__ == "__main__":
         if torch.cuda.is_available():
             torch.cuda.manual_seed(seed)
 
-        data = read_data(config.dataset_name)
-        O_training, O_target, O_test = split_data(data, config)
-        L_row, L_col = compute_the_laplacians(data)
+        dataset = read_data(config.dataset_name)
+        O_training, O_target, O_test = split_data(dataset, config)
+        L_row, L_col = compute_the_laplacians(dataset)
 
 
 
@@ -166,15 +166,21 @@ if __name__ == "__main__":
         L_row = sparse_mx_to_torch(L_row).to(config.device)
         L_col = sparse_mx_to_torch(L_col).to(config.device)
 
-        L_row_rescaled = L_row - torch.eye(L_row.shape[0], device=config.device)
-        L_col_rescaled = L_col - torch.eye(L_col.shape[0], device=config.device)
+        if config.enable_eigenvalue_scaling_laplacian:
+            lambda_n_row = sorted(np.linalg.eigvals(L_row))[-1]
+            lambda_n_col = sorted(np.linalg.eigvals(L_col))[-1]
+        else:
+            lambda_n_row = 2.0
+            lambda_n_col = 2.0
+        L_row_rescaled =  (2 / lambda_n_row) *L_row - torch.eye(L_row.shape[0], device=config.device)
+        L_col_rescaled = (2 / lambda_n_col) * L_col - torch.eye(L_col.shape[0], device=config.device)
 
         model = MGCNN(L_row_rescaled, L_col_rescaled, config)
         model = model.to(config.device)
         summary(
             model,
             depth=5,
-            input_size=(data['M'].shape[0], data['M'].shape[1]),
+            input_size=(dataset['M'].shape[0], dataset['M'].shape[1]),
             )
 
         optimizer = torch.optim.AdamW(
@@ -186,7 +192,7 @@ if __name__ == "__main__":
         loss = DirichletReguLoss(L_row, L_col, config)
         loss_rmse = rmse
 
-        data = torch.tensor(data["M"]).to(config.device)
+        data = torch.tensor(dataset["M"]).to(config.device)
         O_training = torch.tensor(O_training).to(config.device)
         O_test = torch.tensor(O_test).to(config.device)
         O_target = torch.tensor(O_target).to(config.device)
@@ -217,5 +223,7 @@ if __name__ == "__main__":
         compute_laplacian_factor_from_model(model, config)
 
         compare_prediction(model, data, O_training,O_target,O_test,  config)
+
+        compute_energy_k_distant_from_model(model, dataset, config)
     
         log.info("✅ Pipeline completed successfully")
