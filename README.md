@@ -67,7 +67,6 @@ Outputs include TensorBoard logs (under `saved_models/.../runs/`), figures in `r
 
 
 **Graph/Filter insights**: [src/multi_graph_cnn/graph_insights.py](src/multi_graph_cnn/graph_insights.py)
- - TODO: explain 
 
   **Visualization:** [src/multi_graph_cnn/visualization.py](src/multi_graph_cnn/visualization.py)
   - Heatmaps for matrix completion, prediction vs. ground-truth, error distributions, and filter influence.
