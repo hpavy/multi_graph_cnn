@@ -58,7 +58,7 @@ Below is a minimal run sketch to train and evaluate on one dataset. Adjust paths
 2) Run training (example):
 
 ```bash
-python main.py --config config_MGCNN.yaml
+python main.py
 ```
 
 Outputs include TensorBoard logs (under `saved_models/.../runs/`), figures in `result_dir`, and best model weights in `output_dir`.
